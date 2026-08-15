@@ -224,14 +224,24 @@ create index invites_deal_idx on app.invites (deal_id) where used_at is null;
 -- ---------------------------------------------------------------------------
 
 create table app.audit_log (
-  id               bigserial primary key,
-  deal_id          uuid references app.deals(id) on delete cascade,
+  -- Первичный ключ включает ключ секционирования — этого требует Postgres.
+  id               bigserial,
+  deal_id          uuid,
   actor_user_id    uuid references app.users(id),
   actor_profile_id uuid references app.profiles(id),
   action           text not null,
   payload          jsonb,
-  created_at       timestamptz not null default now()
-);
+  created_at       timestamptz not null default now(),
+  primary key (id, created_at)
+) partition by range (created_at);
+
+-- Журнал — самая быстрорастущая таблица: на 500 000 пользователей это десятки
+-- миллионов строк в год. Секционирование по месяцам делает архивацию и удаление
+-- старых периодов мгновенными (drop партиции вместо delete по строкам).
+-- Партиции создаёт app.ensure_audit_partitions(), см. 0004_cron.sql.
+-- FK на deals намеренно нет: он мешал бы отцеплять старые партиции, а связь
+-- гарантируется тем, что журнал пишется только из RPC-функций.
+create table app.audit_log_default partition of app.audit_log default;
 
 create index audit_deal_idx on app.audit_log (deal_id, created_at);
 create index audit_created_idx on app.audit_log (created_at);
@@ -258,6 +268,8 @@ create table app.outbox (
   kind           text not null,
   payload        jsonb not null,
   dedup_key      text unique,
+  -- 1 — реакция на действие человека (её ждут прямо сейчас), 5 — плановая рассылка.
+  priority       smallint not null default 5,
   scheduled_at   timestamptz not null default now(),
   sent_at        timestamptz,
   attempts       smallint not null default 0,
@@ -265,7 +277,9 @@ create table app.outbox (
   created_at     timestamptz not null default now()
 );
 
-create index outbox_pending_idx on app.outbox (scheduled_at)
+-- Telegram принимает от бота порядка 30 сообщений в секунду, поэтому рассыльщик
+-- забирает очередь порциями строго в этом порядке: сначала срочное, потом плановое.
+create index outbox_pending_idx on app.outbox (priority, scheduled_at)
   where sent_at is null;
 
 -- ---------------------------------------------------------------------------

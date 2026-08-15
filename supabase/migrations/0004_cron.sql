@@ -48,85 +48,85 @@ begin
 end;
 $$;
 
--- FR-031/FR-035: просрочка — признак, а не статус (Р-6), поэтому задача не меняет
--- статус, а только напоминает. Частота — по настройке пользователя (FR-057).
-create or replace function app.job_notify_overdue() returns integer
+-- FR-031/FR-035 + FR-056/FR-057. При 500 000 пользователей поштучные сообщения
+-- («по сделке №1 просрочка», «по сделке №2 просрочка») дали бы миллионы отправок
+-- в сутки и упёрлись бы в лимит Telegram (~30 сообщений в секунду от бота).
+-- Поэтому плановые напоминания собираются в одну сводку на пользователя в день,
+-- а мгновенные уведомления о действиях контрагента остаются поштучными.
+create or replace function app.job_build_digests() returns integer
 language plpgsql security definer set search_path = app, pg_catalog as $$
 declare
   affected integer := 0;
   r record;
 begin
   for r in
-    select d.id, d.initiator_profile_id, d.partner_profile_id,
-           (app.today_msk() - d.due_date) as days_late
-      from app.deals d
-     where d.status in ('accepted', 'negotiation', 'frozen')
-       and d.due_date < app.today_msk()
-       and d.amount_minor > d.paid_minor
-       -- Р-7: заявленный платёж останавливает напоминания о просрочке.
-       and not exists (select 1 from app.payments p
-                        where p.deal_id = d.id and p.status = 'claimed')
+    with visible as (
+      -- Каждая незакрытая сделка попадает к обоим участникам.
+      select pr.owner_user_id as user_id, d.id as deal_id, d.due_date,
+             (d.amount_minor - d.paid_minor) as remaining_minor,
+             (app.today_msk() - d.due_date) as days_late,
+             (d.due_date - app.today_msk()) as days_left
+        from app.deals d
+        join app.profiles pr on pr.id in (d.initiator_profile_id, d.partner_profile_id)
+       where d.status in ('accepted', 'negotiation', 'frozen')
+         and d.amount_minor > d.paid_minor
+         -- Р-7: заявленный платёж останавливает напоминания по этой сделке.
+         and not exists (select 1 from app.payments p
+                          where p.deal_id = d.id and p.status = 'claimed')
+    ),
+    filtered as (
+      select v.*,
+             coalesce(s.overdue_frequency, 'daily') as freq,
+             coalesce(s.remind_days_before, '{1,3}'::smallint[]) as remind_days
+        from visible v
+        join app.users u on u.id = v.user_id and not u.is_banned and not u.bot_blocked
+        left join app.notification_settings s on s.user_id = v.user_id
+    )
+    select user_id,
+           count(*) filter (where days_late > 0
+                              and freq <> 'off'
+                              and (freq <> 'every_2_days' or days_late % 2 = 0)
+                              and (freq <> 'weekly'       or days_late % 7 = 0)) as overdue_count,
+           coalesce(sum(remaining_minor) filter (where days_late > 0), 0)        as overdue_minor,
+           count(*) filter (where days_left >= 0 and days_left::smallint = any (remind_days)) as soon_count,
+           coalesce(sum(remaining_minor)
+                    filter (where days_left >= 0 and days_left::smallint = any (remind_days)), 0) as soon_minor,
+           (array_agg(deal_id order by due_date)
+              filter (where days_late > 0 or days_left::smallint = any (remind_days)))[1:10] as deal_ids
+      from filtered
+     group by user_id
   loop
-    perform app.enqueue_overdue(app.profile_owner(r.initiator_profile_id), r.id, r.days_late);
-    perform app.enqueue_overdue(app.profile_owner(r.partner_profile_id), r.id, r.days_late);
+    -- Пустые сводки не рассылаем.
+    continue when r.overdue_count = 0 and r.soon_count = 0;
+
+    perform app.enqueue(
+      r.user_id, 'digest.daily',
+      jsonb_build_object(
+        'overdue_count', r.overdue_count, 'overdue_minor', r.overdue_minor,
+        'soon_count',    r.soon_count,    'soon_minor',    r.soon_minor,
+        'deal_ids',      to_jsonb(r.deal_ids)),
+      'digest.daily:' || r.user_id || ':' || app.today_msk(),
+      5::smallint
+    );
+    -- Рассылку разносим по времени: разом её всё равно не отправить.
+    update app.outbox
+       set scheduled_at = app.digest_slot(r.user_id)
+     where dedup_key = 'digest.daily:' || r.user_id || ':' || app.today_msk()
+       and sent_at is null;
+
     affected := affected + 1;
   end loop;
   return affected;
 end;
 $$;
 
--- FR-057: ежедневно / через день / раз в неделю / отключить.
-create or replace function app.enqueue_overdue(p_user_id uuid, p_deal_id uuid, p_days_late integer)
-returns void
-language plpgsql security definer set search_path = app, pg_catalog as $$
-declare
-  freq app.overdue_frequency;
-begin
-  if p_user_id is null then
-    return;
-  end if;
-  select coalesce(s.overdue_frequency, 'daily') into freq
-    from app.notification_settings s where s.user_id = p_user_id;
-  freq := coalesce(freq, 'daily');
-
-  if freq = 'off' then return; end if;
-  if freq = 'every_2_days' and p_days_late % 2 <> 0 then return; end if;
-  if freq = 'weekly'       and p_days_late % 7 <> 0 then return; end if;
-
-  perform app.enqueue(p_user_id, 'deal.overdue',
-    jsonb_build_object('deal_id', p_deal_id, 'days_late', p_days_late),
-    'deal.overdue:' || p_user_id || ':' || p_deal_id || ':' || app.today_msk());
-end;
-$$;
-
--- FR-056: напоминание за N дней до срока, N настраивается пользователем.
-create or replace function app.job_notify_upcoming() returns integer
-language plpgsql security definer set search_path = app, pg_catalog as $$
-declare
-  affected integer := 0;
-  r record;
-begin
-  for r in
-    select d.id as deal_id, d.due_date, u.id as user_id,
-           (d.due_date - app.today_msk()) as days_left
-      from app.deals d
-      join app.profiles pr
-        on pr.id in (d.initiator_profile_id, d.partner_profile_id)
-      join app.users u on u.id = pr.owner_user_id
-      left join app.notification_settings s on s.user_id = u.id
-     where d.status in ('accepted', 'negotiation')
-       and d.amount_minor > d.paid_minor
-       and d.due_date >= app.today_msk()
-       and (d.due_date - app.today_msk())::smallint
-             = any (coalesce(s.remind_days_before, '{1,3}'::smallint[]))
-  loop
-    perform app.enqueue(r.user_id, 'deal.due_soon',
-      jsonb_build_object('deal_id', r.deal_id, 'days_left', r.days_left, 'due_date', r.due_date),
-      'deal.due_soon:' || r.user_id || ':' || r.deal_id || ':' || r.due_date);
-    affected := affected + 1;
-  end loop;
-  return affected;
-end;
+-- Плановая сводка уходит с 9:00 МСК, равномерно размазанная на два часа:
+-- 100 000 сообщений при лимите ~30/сек занимают около часа, поэтому очередь
+-- должна быть растянута, а не свалена в одну минуту.
+create or replace function app.digest_slot(p_user_id uuid) returns timestamptz
+language sql stable set search_path = app, pg_catalog as $$
+  select ((app.today_msk() + time '09:00') at time zone 'Europe/Moscow')
+         + make_interval(secs => (abs(hashtext(p_user_id::text)) % 7200));
 $$;
 
 -- Р-7: молчание кредитора дольше N дней трактуется как согласие. Иначе должник
@@ -174,8 +174,7 @@ begin
   result := jsonb_build_object(
     'frozen',           app.job_freeze_stale_negotiations(),
     'auto_confirmed',   app.job_auto_confirm_payments(),
-    'overdue_notified', app.job_notify_overdue(),
-    'due_soon_notified', app.job_notify_upcoming(),
+    'digests',          app.job_build_digests(),
     'invites_expired',  app.job_expire_invites(),
     'ran_at',           now()
   );
@@ -183,6 +182,61 @@ begin
   return result;
 end;
 $$;
+
+-- ---------------------------------------------------------------------------
+-- Обслуживание секций журнала действий
+-- ---------------------------------------------------------------------------
+
+-- Создаёт помесячные партиции на несколько месяцев вперёд. Без этого записи
+-- падают в партицию default, и она со временем становится узким местом.
+create or replace function app.ensure_audit_partitions(p_months_ahead integer default 3)
+returns integer
+language plpgsql security definer set search_path = app, pg_catalog as $$
+declare
+  created integer := 0;
+  m       date;
+  part    text;
+begin
+  for i in 0..p_months_ahead loop
+    m := date_trunc('month', app.today_msk() + make_interval(months => i))::date;
+    part := 'audit_log_' || to_char(m, 'YYYY_MM');
+    if not exists (select 1 from pg_class where relname = part) then
+      execute format(
+        'create table app.%I partition of app.audit_log for values from (%L) to (%L)',
+        part, m, (m + interval '1 month')::date);
+      created := created + 1;
+    end if;
+  end loop;
+  return created;
+end;
+$$;
+
+-- Журнал старше двух лет отцепляется и удаляется целой партицией — мгновенно,
+-- без нагрузки на базу. Сами сделки при этом остаются нетронутыми.
+create or replace function app.drop_old_audit_partitions(p_keep_months integer default 24)
+returns integer
+language plpgsql security definer set search_path = app, pg_catalog as $$
+declare
+  dropped integer := 0;
+  r       record;
+  cutoff  date := date_trunc('month', app.today_msk() - make_interval(months => p_keep_months))::date;
+begin
+  for r in
+    select c.relname
+      from pg_class c
+      join pg_namespace n on n.oid = c.relnamespace
+     where n.nspname = 'app'
+       and c.relname ~ '^audit_log_[0-9]{4}_[0-9]{2}$'
+       and to_date(right(c.relname, 7), 'YYYY_MM') < cutoff
+  loop
+    execute format('drop table app.%I', r.relname);
+    dropped := dropped + 1;
+  end loop;
+  return dropped;
+end;
+$$;
+
+select app.ensure_audit_partitions(3);
 
 -- ---------------------------------------------------------------------------
 -- Доставка уведомлений: планировщик пингует Edge Function, та разбирает outbox
@@ -223,3 +277,6 @@ select cron.schedule('daily-00-01-msk', '1 21 * * *', $$ select app.job_daily();
 select cron.schedule('outbox-worker',   '* * * * *',  $$ select app.kick_outbox_worker(); $$);
 -- Бесплатный тариф Supabase усыпляет проект после недели простоя — держим его живым.
 select cron.schedule('keepalive',       '0 */6 * * *', $$ select 1; $$);
+-- Партиции журнала: создаём заранее, старые убираем раз в месяц.
+select cron.schedule('audit-partitions', '30 21 28 * *',
+  $$ select app.ensure_audit_partitions(3), app.drop_old_audit_partitions(24); $$);

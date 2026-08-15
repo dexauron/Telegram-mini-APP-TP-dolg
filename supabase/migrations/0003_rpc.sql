@@ -41,7 +41,8 @@ $$;
 -- Постановка уведомления в очередь. dedup_key защищает от дублей при повторных
 -- вызовах и ретраях CRON.
 create or replace function app.enqueue(
-  p_user_id uuid, p_kind text, p_payload jsonb, p_dedup_key text default null
+  p_user_id uuid, p_kind text, p_payload jsonb, p_dedup_key text default null,
+  p_priority smallint default 1
 ) returns void
 language plpgsql security definer set search_path = app, pg_catalog as $$
 begin
@@ -56,8 +57,8 @@ begin
     return;
   end if;
 
-  insert into app.outbox (user_id, kind, payload, dedup_key)
-  values (p_user_id, p_kind, p_payload, p_dedup_key)
+  insert into app.outbox (user_id, kind, payload, dedup_key, priority)
+  values (p_user_id, p_kind, p_payload, p_dedup_key, p_priority)
   on conflict (dedup_key) do nothing;
 end;
 $$;
@@ -642,7 +643,7 @@ $$;
 
 revoke all on function
   app.assert_my_profile(uuid), app.profile_owner(uuid),
-  app.log(uuid, uuid, text, jsonb), app.enqueue(uuid, text, jsonb, text),
+  app.log(uuid, uuid, text, jsonb), app.enqueue(uuid, text, jsonb, text, smallint),
   app.notify_counterparty(app.deals, uuid, text, jsonb),
   app.my_side(app.deals), app.load_deal(uuid), app.my_profile_in_deal(app.deals),
   app.close_if_fully_paid(uuid)

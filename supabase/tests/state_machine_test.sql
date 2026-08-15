@@ -27,7 +27,9 @@ insert into app.profiles (owner_user_id, kind, name, is_default)
 
 select set_config('test.profile_a', :'pa_id', false),
        set_config('test.profile_b', :'pb_id', false),
-       set_config('test.profile_c', :'pc_id', false) \gset _
+       set_config('test.profile_c', :'pc_id', false),
+       set_config('test.user_a',    :'ua_id', false),
+       set_config('test.user_b',    :'ub_id', false) \gset _
 
 -- ---------------------------------------------------------------------------
 -- 1. Алиса создаёт сделку: магазин должен ей 45 000 ₽ через 5 дней.
@@ -332,6 +334,88 @@ begin
   assert (select count(*) from app.bilateral_stats) = 0,
     'посторонний не должен видеть статистику чужой пары';
   raise notice 'OK 9.1: статистика приватна для пары (Р-2)';
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- 10. Плановые напоминания: одна сводка на пользователя в день, а не письмо
+--     на каждую сделку (иначе 500 000 пользователей упрут бота в лимиты).
+-- ---------------------------------------------------------------------------
+select set_config('request.jwt.claims', json_build_object('sub', :'ua_id')::text, false) \gset _
+
+-- Три просроченные сделки у одной и той же пары.
+select r ->> 'deal_id' as id from app.rpc_create_deal(
+  p_profile_id => :'pa_id', p_amount_minor => 100000,
+  p_due_date => (app.today_msk() - 1), p_debtor_side => 'partner',
+  p_partner_profile_id => :'pb_id') as r \gset d1_
+select r ->> 'deal_id' as id from app.rpc_create_deal(
+  p_profile_id => :'pa_id', p_amount_minor => 200000,
+  p_due_date => (app.today_msk() - 2), p_debtor_side => 'partner',
+  p_partner_profile_id => :'pb_id') as r \gset d2_
+select r ->> 'deal_id' as id from app.rpc_create_deal(
+  p_profile_id => :'pa_id', p_amount_minor => 300000,
+  p_due_date => (app.today_msk() - 4), p_debtor_side => 'partner',
+  p_partner_profile_id => :'pb_id') as r \gset d3_
+
+select set_config('request.jwt.claims', json_build_object('sub', :'ub_id')::text, false) \gset _
+select app.rpc_accept_deal(:'d1_id', :'pb_id');
+select app.rpc_accept_deal(:'d2_id', :'pb_id');
+select app.rpc_accept_deal(:'d3_id', :'pb_id');
+
+reset role;
+select app.job_build_digests() as n \gset digest_
+
+do $$
+declare
+  digests   integer;
+  a_payload jsonb;
+begin
+  select count(*) into digests from app.outbox where kind = 'digest.daily';
+  assert digests = 2, 'ожидались две сводки (обоим участникам), получено ' || digests;
+
+  select payload into a_payload from app.outbox
+   where kind = 'digest.daily' and user_id = current_setting('test.user_a')::uuid;
+  assert (a_payload ->> 'overdue_count')::int = 3,
+    'в сводке должно быть 3 просроченные сделки, а не ' || (a_payload ->> 'overdue_count');
+  assert (a_payload ->> 'overdue_minor')::bigint = 600000,
+    'сумма просрочки в сводке неверна: ' || (a_payload ->> 'overdue_minor');
+  raise notice 'OK 10: три просрочки свернулись в одну сводку на пользователя';
+end $$;
+
+-- Повторный запуск в тот же день не должен создавать дубли (dedup_key).
+select app.job_build_digests();
+do $$
+declare digests integer;
+begin
+  select count(*) into digests from app.outbox where kind = 'digest.daily';
+  assert digests = 2, 'повторный прогон продублировал сводки: ' || digests;
+  raise notice 'OK 10.1: повторный прогон CRON не дублирует рассылку';
+end $$;
+
+-- Рассылка разнесена по времени: два пользователя не получают сообщения
+-- в одну и ту же секунду.
+do $$
+declare spread integer;
+begin
+  select count(distinct scheduled_at) into spread
+    from app.outbox where kind = 'digest.daily';
+  assert spread = 2, 'плановая рассылка не разнесена по времени';
+  raise notice 'OK 10.2: очередь рассылки размазана по окну отправки';
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- 11. Журнал действий пишется в помесячные секции, а не в default.
+-- ---------------------------------------------------------------------------
+do $$
+declare in_default integer; in_month integer;
+begin
+  select count(*) into in_default from app.audit_log_default;
+  assert in_default = 0, 'записи попали в секцию по умолчанию: ' || in_default;
+
+  execute format('select count(*) from app.%I',
+                 'audit_log_' || to_char(app.today_msk(), 'YYYY_MM'))
+     into in_month;
+  assert in_month > 0, 'месячная секция журнала пуста';
+  raise notice 'OK 11: журнал секционирован по месяцам';
 end $$;
 
 reset role;
