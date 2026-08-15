@@ -4,6 +4,8 @@ import { formatMoney } from "../lib/format";
 import { tg } from "../lib/telegram";
 import { ReportsCard } from "./ReportsCard";
 import { Group } from "../components/Loader";
+import { ProfilesCard } from "./ProfilesCard";
+import { listProfiles } from "../api/profiles";
 
 interface Settings {
   remind_days_before: number[];
@@ -36,9 +38,15 @@ export function ProfileScreen({
   profile: Profile;
   onSelectProfile: (profile: Profile) => void;
 }) {
+  const [profiles, setProfiles] = useState<Profile[]>(session.profiles);
+  const [reloadKey, setReloadKey] = useState(0);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [stats, setStats] = useState<Stats[]>([]);
   const [names, setNames] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    void listProfiles(session.user.id).then(setProfiles).catch(() => {});
+  }, [session.user.id, reloadKey]);
 
   useEffect(() => {
     void (async () => {
@@ -78,23 +86,12 @@ export function ProfileScreen({
         <h1>Профиль</h1>
       </header>
 
-      <Group>
-        <div className="cell">
-          <span className="cell-main">
-            <span className="cell-title strong">{profile.name}</span>
-            <span className="cell-sub">
-              {profile.kind === "supplier" ? "Поставщик"
-                : profile.kind === "store" ? "Магазин" : "Поставщик и магазин"}
-            </span>
-          </span>
-        </div>
-        {session.profiles.length > 1 && session.profiles.filter((p) => p.id !== profile.id).map((p) => (
-          <button key={p.id} className="cell" onClick={() => onSelectProfile(p)}>
-            <span className="cell-title">{p.name}</span>
-            <span className="cell-right"><span className="cell-value">Переключиться</span></span>
-          </button>
-        ))}
-      </Group>
+      <ProfilesCard
+        profiles={profiles}
+        active={profile}
+        onSelect={onSelectProfile}
+        onChanged={() => setReloadKey((n) => n + 1)}
+      />
 
       {/* Р-2: никаких звёзд и публичных отзывов — только история с теми,
           с кем реально работали, и видна она только вам двоим. */}

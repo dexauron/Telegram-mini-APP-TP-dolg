@@ -356,6 +356,7 @@ select r ->> 'deal_id' as id from app.rpc_create_deal(
   p_due_date => (app.today_msk() - 4), p_debtor_side => 'partner',
   p_partner_profile_id => :'pb_id') as r \gset d3_
 
+select set_config('test.d1', :'d1_id', false) \gset _
 select set_config('request.jwt.claims', json_build_object('sub', :'ub_id')::text, false) \gset _
 select app.rpc_accept_deal(:'d1_id', :'pb_id');
 select app.rpc_accept_deal(:'d2_id', :'pb_id');
@@ -416,6 +417,148 @@ begin
      into in_month;
   assert in_month > 0, 'месячная секция журнала пуста';
   raise notice 'OK 11: журнал секционирован по месяцам';
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- 12. Вложения (Р-8): файл приходит боту, прикрепляется к записи, доступен
+--     обеим сторонам и никому больше.
+-- ---------------------------------------------------------------------------
+reset role;
+select app.save_pending_upload(
+  :'ua_id', 'photo', 'AgACAgIAAxkBAAI-test-file-id', 'uniq-1', 'nakladnaya.jpg',
+  'image/jpeg', 245000, 'Накладная №12');
+
+set role authenticated;
+select set_config('request.jwt.claims', json_build_object('sub', :'ua_id')::text, false) \gset _
+select app.rpc_attach_pending(:'d1_id') ->> 'attachment_id' as id \gset att_
+select set_config('test.att', :'att_id', false) \gset _
+
+do $$
+declare a app.attachments;
+begin
+  select * into a from app.attachments where id = current_setting('test.att')::uuid;
+  assert a.tg_file_id = 'AgACAgIAAxkBAAI-test-file-id', 'file_id не сохранён';
+  assert a.deal_id = current_setting('test.d1')::uuid, 'вложение привязано не к той записи';
+  raise notice 'OK 12: файл прикреплён к записи, хранится только ссылка Telegram';
+end $$;
+
+-- Очередь отложенных файлов клиенту недоступна вовсе, поэтому проверяем её
+-- служебной ролью.
+reset role;
+do $$
+begin
+  assert (select count(*) from app.pending_uploads) = 0,
+    'отложенный файл не убран после прикрепления';
+  raise notice 'OK 12.0: отложенный файл израсходован';
+end $$;
+set role authenticated;
+
+-- Вторая сторона видит вложение и может запросить файл.
+select set_config('request.jwt.claims', json_build_object('sub', :'ub_id')::text, false) \gset _
+do $$
+begin
+  assert (select count(*) from app.attachments
+           where deal_id = current_setting('test.d1')::uuid) = 1,
+    'контрагент не видит вложение';
+  assert (select app.attachment_file(current_setting('test.att')::uuid) ->> 'tg_file_id')
+         = 'AgACAgIAAxkBAAI-test-file-id', 'контрагенту не выдан file_id';
+  raise notice 'OK 12.1: вложение доступно обеим сторонам сделки';
+end $$;
+
+-- Посторонний не получает ни списка, ни файла.
+select set_config('request.jwt.claims', json_build_object('sub', :'uc_id')::text, false) \gset _
+do $$
+begin
+  assert (select count(*) from app.attachments) = 0, 'посторонний видит чужие вложения';
+  begin
+    perform app.attachment_file(current_setting('test.att')::uuid);
+    raise exception 'ожидалась ошибка доступа к чужому файлу';
+  exception when sqlstate '42501' then
+    raise notice 'OK 12.2: чужой файл не выдаётся';
+  end;
+end $$;
+
+-- Удалить вложение может только приложивший.
+do $$
+begin
+  begin
+    perform app.rpc_delete_attachment(current_setting('test.att')::uuid);
+    raise exception 'ожидался запрет удаления чужого вложения';
+  exception when sqlstate '42501' then
+    raise notice 'OK 12.3: чужое вложение не удалить';
+  end;
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- 13. Мультипрофиль (FR-006…FR-012)
+-- ---------------------------------------------------------------------------
+select set_config('request.jwt.claims', json_build_object('sub', :'ua_id')::text, false) \gset _
+select app.rpc_create_profile('ИП Алиса, склад №2', 'supplier') ->> 'id' as id \gset p2_
+select set_config('test.p2', :'p2_id', false) \gset _
+
+do $$
+declare mine integer;
+begin
+  -- Считаем именно свои: по RLS видны ещё и профили контрагентов.
+  select count(*) into mine from app.profiles
+   where owner_user_id = current_setting('test.user_a')::uuid;
+  assert mine = 2, 'второй профиль не создан, своих профилей ' || mine;
+  raise notice 'OK 13: второй профиль создан';
+end $$;
+
+-- Черновик переключается между профилями по кругу (FR-011).
+select r ->> 'deal_id' as id from app.rpc_create_deal(
+  p_profile_id => :'pa_id', p_amount_minor => 300000,
+  p_due_date => (app.today_msk() + 3), p_debtor_side => 'partner',
+  p_as_draft => true) as r \gset draft_
+select set_config('test.draft', :'draft_id', false) \gset _
+
+select app.rpc_cycle_draft_profile(:'draft_id') ->> 'id' as id \gset cycled_
+
+do $$
+declare d app.deals;
+begin
+  select * into d from app.deals where id = current_setting('test.draft')::uuid;
+  assert d.initiator_profile_id = current_setting('test.p2')::uuid,
+    'черновик не переключился на второй профиль';
+  raise notice 'OK 13.1: профиль черновика переключается по кругу';
+end $$;
+
+-- Основной профиль меняется, архивировать основной нельзя.
+select app.rpc_set_default_profile(:'p2_id');
+do $$
+begin
+  assert (select is_default from app.profiles where id = current_setting('test.p2')::uuid),
+    'второй профиль не стал основным';
+  begin
+    perform app.rpc_archive_profile(current_setting('test.p2')::uuid);
+    raise exception 'ожидался запрет архивации основного профиля';
+  exception when sqlstate 'P0001' then
+    raise notice 'OK 13.2: основной профиль не архивируется';
+  end;
+end $$;
+
+-- Профиль с незакрытыми записями тоже не архивируется.
+do $$
+begin
+  begin
+    perform app.rpc_archive_profile(current_setting('test.profile_a')::uuid);
+    raise exception 'ожидался запрет архивации профиля с открытыми записями';
+  exception when sqlstate 'P0001' then
+    raise notice 'OK 13.3: профиль с незакрытыми записями не архивируется';
+  end;
+end $$;
+
+-- Чужой профиль недоступен для управления.
+select set_config('request.jwt.claims', json_build_object('sub', :'uc_id')::text, false) \gset _
+do $$
+begin
+  begin
+    perform app.rpc_set_default_profile(current_setting('test.p2')::uuid);
+    raise exception 'ожидался запрет управления чужим профилем';
+  exception when sqlstate '42501' then
+    raise notice 'OK 13.4: чужим профилем управлять нельзя';
+  end;
 end $$;
 
 reset role;

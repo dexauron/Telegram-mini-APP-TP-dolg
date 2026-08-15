@@ -11,6 +11,10 @@ import { formatMoney, formatDate, todayMsk, inputToMinor, plural } from "../lib/
 import { StatusBadge } from "../components/StatusBadge";
 import { Loader, Group } from "../components/Loader";
 import { confirm, haptic } from "../lib/telegram";
+import {
+  listAttachments, requestAttachment, deleteAttachment,
+  KIND_LABEL, type Attachment,
+} from "../api/attachments";
 
 const ACTION_LABEL: Record<string, string> = {
   "deal.created": "Запись создана",
@@ -42,6 +46,7 @@ export function DealScreen({
   const [deal, setDeal] = useState<Deal | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [history, setHistory] = useState<AuditEntry[]>([]);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [counterparty, setCounterparty] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState<null | "pay" | "propose" | "split">(null);
@@ -54,9 +59,12 @@ export function DealScreen({
     setDeal(fresh);
     if (!fresh) return;
 
-    const [pays, hist] = await Promise.all([getPayments(dealId), getHistory(dealId)]);
+    const [pays, hist, files] = await Promise.all([
+      getPayments(dealId), getHistory(dealId), listAttachments(dealId),
+    ]);
     setPayments(pays);
     setHistory(hist);
+    setAttachments(files);
 
     const otherId = fresh.initiator_profile_id === profile.id
       ? fresh.partner_profile_id
@@ -367,6 +375,62 @@ export function DealScreen({
           </ul>
         </Group>
       )}
+
+      {/* FR-071…FR-076: файлы остаются в Telegram, бот присылает их по запросу. */}
+      <Group
+        title="Вложения"
+        footer={attachments.length
+          ? "Файл придёт в чат с ботом. Мы храним только ссылку — сами файлы остаются в Telegram."
+          : "Чтобы приложить фото накладной, отправьте файл боту — он спросит, к какой записи его прикрепить."}
+      >
+        {attachments.length === 0 ? (
+          <p className="hint" style={{ padding: "11px 16px" }}>Файлов пока нет.</p>
+        ) : (
+          <ul className="list">
+            {attachments.map((file) => (
+              <li key={file.id}>
+                <button
+                  className="cell"
+                  disabled={busy}
+                  onClick={() => run(async () => {
+                    await requestAttachment(file.id);
+                    alert("Файл отправлен вам в чат с ботом");
+                  })}
+                >
+                  <span className="cell-main">
+                    <span className="cell-title">
+                      {file.file_name ?? KIND_LABEL[file.kind]}
+                    </span>
+                    <span className="cell-sub">
+                      {KIND_LABEL[file.kind]}
+                      {file.uploaded_by_profile_id === profile.id ? " · ваш файл" : ""}
+                    </span>
+                  </span>
+                  <span className="cell-right">
+                    <span className="cell-value">Прислать</span>
+                    <span className="chevron">›</span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        {attachments.some((f) => f.uploaded_by_profile_id === profile.id) && (
+          <button
+            className="plain destructive"
+            disabled={busy}
+            onClick={async () => {
+              const mine = attachments.filter((f) => f.uploaded_by_profile_id === profile.id);
+              const last = mine[mine.length - 1];
+              if (await confirm(`Убрать «${last.file_name ?? KIND_LABEL[last.kind]}» из записи? Сам файл останется в Telegram.`)) {
+                void run(() => deleteAttachment(last.id));
+              }
+            }}
+          >
+            Убрать последний свой файл
+          </button>
+        )}
+      </Group>
 
       {/* FR-034: история действий как доказательство при споре. */}
       <Group title="История">

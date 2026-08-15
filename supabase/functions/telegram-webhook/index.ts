@@ -36,13 +36,15 @@ interface Session {
   userId: string;
   token: string;
   profileId: string;
+  profileName: string;
+  profileCount: number;
 }
 
 /** Заводит пользователя при первом обращении и выдаёт токен для вызовов RPC. */
 async function session(from: TgUser): Promise<Session> {
   const result = await rpc<{
     user: { id: string; telegram_id: number };
-    profiles: Array<{ id: string; is_default: boolean }>;
+    profiles: Array<{ id: string; name: string; is_default: boolean }>;
   }>("upsert_telegram_user", {
     p_telegram_id: from.id,
     p_username: from.username ?? null,
@@ -58,7 +60,13 @@ async function session(from: TgUser): Promise<Session> {
     profile_ids: result.profiles.map((p) => p.id),
   }, JWT_SECRET, 5 * 60);
 
-  return { userId: result.user.id, token, profileId: profile.id };
+  return {
+    userId: result.user.id,
+    token,
+    profileId: profile.id,
+    profileName: profile.name,
+    profileCount: result.profiles.length,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -92,19 +100,27 @@ function miniAppButton() {
     : undefined;
 }
 
-function previewKeyboard(dealId: string, debtorSide: string) {
-  return {
-    inline_keyboard: [
-      [
-        { text: "✓ Создать", callback_data: `s:${dealId}` },
-        { text: "✕ Отменить", callback_data: `x:${dealId}` },
-      ],
-      [{
-        text: debtorSide === "partner" ? "🔄 Сейчас: мне должны" : "🔄 Сейчас: я должен",
-        callback_data: `t:${dealId}`,
-      }],
+function previewKeyboard(dealId: string, debtorSide: string, profile?: {
+  name: string;
+  count: number;
+}) {
+  const rows = [
+    [
+      { text: "✓ Создать", callback_data: `s:${dealId}` },
+      { text: "✕ Отменить", callback_data: `x:${dealId}` },
     ],
-  };
+    [{
+      text: debtorSide === "partner" ? "🔄 Сейчас: мне должны" : "🔄 Сейчас: я должен",
+      callback_data: `t:${dealId}`,
+    }],
+  ];
+
+  // FR-011: профиль спрашиваем только у тех, у кого их несколько. Кнопка
+  // переключает по кругу — два идентификатора в callback_data не помещаются.
+  if (profile && profile.count > 1) {
+    rows.push([{ text: `👤 От имени: ${profile.name}`, callback_data: `cp:${dealId}` }]);
+  }
+  return { inline_keyboard: rows };
 }
 
 /** Ссылка-приглашение для WhatsApp и прочих внешних каналов (ТЗ-2 III.1). */
@@ -216,7 +232,63 @@ async function handleText(from: TgUser, chatId: number, text: string) {
         description: parsed.description,
       }, today) + warning,
     parse_mode: "HTML",
-    reply_markup: previewKeyboard(created.deal_id, "partner"),
+    reply_markup: previewKeyboard(created.deal_id, "partner",
+      { name: s.profileName, count: s.profileCount }),
+  });
+}
+
+/**
+ * Файл приходит боту отдельным сообщением, а уже потом человек выбирает запись.
+ * Иначе никак: Telegram не даёт мини-приложению отправить файл в чат, а в
+ * callback-кнопку идентификатор файла не помещается (Р-8).
+ */
+async function handleAttachment(
+  from: TgUser,
+  chatId: number,
+  file: {
+    kind: string;
+    file_id: string;
+    file_unique_id?: string;
+    file_name?: string;
+    mime_type?: string;
+    file_size?: number;
+  },
+  caption: string | undefined,
+) {
+  const s = await session(from);
+
+  await rpc("save_pending_upload", {
+    p_user_id: s.userId,
+    p_kind: file.kind,
+    p_tg_file_id: file.file_id,
+    p_tg_file_unique_id: file.file_unique_id ?? null,
+    p_file_name: file.file_name ?? null,
+    p_mime_type: file.mime_type ?? null,
+    p_size_bytes: file.file_size ?? null,
+    p_caption: caption ?? null,
+  });
+
+  const deals = await rpc<Array<{
+    deal_id: string; amount_minor: number; due_date: string; counterparty: string;
+  }>>("recent_open_deals", { p_limit: 5 }, s.token);
+
+  if (!deals.length) {
+    await bot("sendMessage", {
+      chat_id: chatId,
+      text: "Файл получил, но открытых записей нет. Создайте запись — и пришлите файл ещё раз.",
+    });
+    return;
+  }
+
+  await bot("sendMessage", {
+    chat_id: chatId,
+    text: "Файл получил. К какой записи прикрепить?",
+    reply_markup: {
+      inline_keyboard: deals.map((d) => [{
+        text: `${formatMoney(d.amount_minor)} · ${d.counterparty}`,
+        callback_data: `pf:${d.deal_id}`,
+      }]),
+    },
   });
 }
 
@@ -398,6 +470,33 @@ async function handleCallback(
         return;
       }
 
+      case "pf": {  // прикрепить присланный файл к выбранной записи
+        const attached = await rpc<{ kind: string; file_name: string | null }>(
+          "rpc_attach_pending", { p_deal_id: argument }, s.token,
+        );
+        await answer("Файл прикреплён");
+        await replaceMarkup(
+          `📎 <b>Файл прикреплён к записи</b>\n\n${
+            attached.file_name ? escapeHtml(attached.file_name) : "Вложение"
+          } теперь видно обеим сторонам.`,
+        );
+        return;
+      }
+
+      case "cp": {  // выбрать, от имени какого профиля создаётся запись
+        const next = await rpc<{ id: string; name: string }>(
+          "rpc_cycle_draft_profile", { p_deal_id: argument }, s.token,
+        );
+        await answer(`От имени: ${next.name}`);
+        await bot("editMessageReplyMarkup", {
+          chat_id: chatId,
+          message_id: messageId,
+          reply_markup: previewKeyboard(argument, "partner",
+            { name: next.name, count: s.profileCount }),
+        });
+        return;
+      }
+
       case "at": {  // подтвердить открытую карточку по токену приглашения
         const preview = await rpc<null | { deal_id: string }>("invite_preview", {
           p_token: argument,
@@ -516,6 +615,20 @@ Deno.serve(async (req) => {
       } else if (!text.startsWith("/")) {
         await handleText(from, chat.id, text);
       }
+    } else if (update.message && (update.message.photo || update.message.document ||
+               update.message.video || update.message.voice || update.message.audio)) {
+      const m = update.message;
+      if (m.chat.type !== "private") return json({ ok: true });
+
+      // У фотографии Telegram присылает несколько размеров — берём самый крупный.
+      const file = m.photo
+        ? { kind: "photo", ...m.photo[m.photo.length - 1] }
+        : m.document ? { kind: "document", ...m.document }
+        : m.video ? { kind: "video", ...m.video }
+        : m.voice ? { kind: "voice", ...m.voice }
+        : { kind: "audio", ...m.audio };
+
+      await handleAttachment(m.from, m.chat.id, file, m.caption);
     } else if (update.inline_query) {
       const { from, id, query } = update.inline_query;
       await handleInlineQuery(from, id, query);

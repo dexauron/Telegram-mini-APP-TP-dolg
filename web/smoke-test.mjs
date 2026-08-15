@@ -116,7 +116,22 @@ await page.route("**/api/**", async (route) => {
         actor_profile_id: "p2", payload: null },
     ]);
   }
-  if (url.includes("/profiles")) return jsonRoute(route, PROFILES);
+  if (url.includes("/profiles")) {
+    if (url.includes("owner_user_id")) {
+      return jsonRoute(route, [
+        { id: "p1", name: "ИП Алиса", kind: "supplier", is_default: true },
+        { id: "p9", name: "Магазин на Ленина", kind: "store", is_default: false },
+      ]);
+    }
+    return jsonRoute(route, PROFILES);
+  }
+  if (url.includes("/attachments")) {
+    return jsonRoute(route, [{
+      id: "a1", deal_id: "d1", kind: "photo", file_name: "nakladnaya.jpg",
+      caption: null, size_bytes: 245000, uploaded_by_profile_id: "p1",
+      created_at: new Date().toISOString(),
+    }]);
+  }
   if (url.includes("/bilateral_stats")) return jsonRoute(route, []);
   if (url.includes("/notification_settings")) {
     return jsonRoute(route, {
@@ -163,6 +178,22 @@ const placeholders = [...termsText.matchAll(/\[[А-ЯA-Z_]+\]/g)].map((m) => m[0
 if (placeholders.length) {
   console.log(`НАПОМИНАНИЕ: в оферте осталось заполнить ${[...new Set(placeholders)].join(", ")}`);
 }
+
+// Вложения в карточке сделки (FR-074) и мультипрофиль (FR-008).
+await page.goto("http://localhost:4173/", { waitUntil: "domcontentloaded" });
+await page.waitForSelector("text=Принять и начать", { timeout: 5000 });
+await page.click("text=Принять и начать");
+await page.waitForSelector("text=Магазин «Заря»", { timeout: 5000 });
+await page.click("text=Магазин «Заря»");
+await page.waitForSelector("text=Вложения", { timeout: 5000 });
+const hasFile = await page.locator("text=nakladnaya.jpg").count();
+console.log(hasFile ? "OK: вложение видно в карточке" : "ОШИБКА: вложение не показано");
+
+await page.click("text=Назад");
+await page.click("text=Профиль");
+await page.waitForSelector("text=Магазин на Ленина", { timeout: 5000 });
+console.log("OK: список профилей показан");
+await page.screenshot({ path: `${OUT}/06-profil.png` });
 
 console.log(crashes.length ? "ОШИБКИ JS:\n" + crashes.join("\n") : "OK: исключений JavaScript нет");
 await browser.close();
