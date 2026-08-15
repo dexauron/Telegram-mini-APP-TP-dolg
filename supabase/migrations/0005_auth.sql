@@ -299,3 +299,58 @@ grant execute on function
   app.deal_invite_token(uuid),
   app.rpc_toggle_draft_side(uuid)
 to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Календарь (FR-046…FR-052)
+-- ---------------------------------------------------------------------------
+
+-- Отдаёт сводку по дням месяца одним запросом. Тянуть в приложение все сделки
+-- месяца ради подсчёта сумм нельзя: на активном профиле это сотни строк на
+-- каждое перелистывание календаря.
+create or replace function app.rpc_calendar_month(
+  p_profile_id uuid, p_month date
+) returns jsonb
+language sql security definer set search_path = app, pg_catalog as $$
+  with mine as (
+    select d.due_date,
+           (d.amount_minor - d.paid_minor) as remaining_minor,
+           d.status,
+           (d.debtor_profile_id = p_profile_id) as i_owe,
+           (d.status in ('accepted','negotiation','frozen')
+            and d.due_date < app.today_msk()) as overdue
+      from app.deals d
+     where p_profile_id = any (app.my_profile_ids())
+       and (d.initiator_profile_id = p_profile_id or d.partner_profile_id = p_profile_id)
+       and d.status <> 'draft'
+       and d.due_date >= date_trunc('month', p_month)::date
+       and d.due_date <  (date_trunc('month', p_month) + interval '1 month')::date
+  ),
+  by_day as (
+    select due_date,
+           coalesce(sum(remaining_minor) filter (where i_owe), 0)     as i_owe_minor,
+           coalesce(sum(remaining_minor) filter (where not i_owe), 0) as owed_to_me_minor,
+           count(*)                                                   as deals_count,
+           bool_or(overdue)                                           as has_overdue,
+           bool_and(status = 'completed')                             as all_paid
+      from mine
+     group by due_date
+  )
+  select jsonb_build_object(
+    'days', coalesce((
+      select jsonb_agg(jsonb_build_object(
+               'date',             due_date,
+               'i_owe_minor',      i_owe_minor,
+               'owed_to_me_minor', owed_to_me_minor,
+               'count',            deals_count,
+               'has_overdue',      has_overdue,
+               'all_paid',         all_paid)
+             order by due_date)
+        from by_day), '[]'::jsonb),
+    'total_i_owe_minor',
+      coalesce((select sum(remaining_minor) from mine where i_owe and status <> 'completed'), 0),
+    'total_owed_to_me_minor',
+      coalesce((select sum(remaining_minor) from mine where not i_owe and status <> 'completed'), 0)
+  );
+$$;
+
+grant execute on function app.rpc_calendar_month(uuid, date) to authenticated;

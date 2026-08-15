@@ -1,0 +1,220 @@
+/*
+ * NFR-018…NFR-025: чистый минималистичный интерфейс в духе iOS, системные
+ * шрифты, крупные области нажатия, цвета берутся из темы Telegram, поэтому
+ * приложение автоматически совпадает со светлым и тёмным оформлением клиента.
+ */
+
+:root {
+  --bg: #f2f2f7;
+  --card: #ffffff;
+  --text: #000000;
+  --hint: #8e8e93;
+  --accent: #007aff;
+  --accent-text: #ffffff;
+  --danger: #ff3b30;
+  --positive: #34c759;
+  --radius: 14px;
+  --gap: 12px;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+button { font: inherit; color: inherit; cursor: pointer; border: none; background: none; }
+input { font: inherit; }
+
+.app { padding-bottom: 76px; }
+
+.screen { padding: var(--gap); display: flex; flex-direction: column; gap: var(--gap); }
+.screen.center { min-height: 100vh; justify-content: center; }
+
+.header h1 { margin: 4px 0; font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+.calendar-header { display: flex; align-items: center; justify-content: space-between; }
+.calendar-header h1 { font-size: 22px; }
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.card h2 { margin: 0; font-size: 17px; font-weight: 600; }
+.card.proposal { border: 1px solid #ffcc00; }
+.card.tos { gap: 14px; }
+.card.tos h1 { margin: 0; font-size: 26px; }
+
+.hint { color: var(--hint); font-size: 14px; margin: 0; }
+.link { color: var(--accent); padding: 4px 0; align-self: flex-start; }
+
+.search {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: none;
+  background: var(--card);
+  color: var(--text);
+}
+
+.totals { display: flex; gap: var(--gap); }
+.totals.sticky { position: sticky; bottom: 76px; }
+.total {
+  flex: 1;
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.total-label { font-size: 13px; color: var(--hint); }
+.total-value { font-size: 19px; font-weight: 600; }
+.positive { color: var(--positive); }
+.negative { color: var(--danger); }
+.danger { color: var(--danger); }
+
+.chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; }
+.chip {
+  white-space: nowrap;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--text);
+  font-size: 14px;
+}
+.chip.active { background: var(--accent); color: var(--accent-text); }
+
+.list, .plain, .timeline { list-style: none; margin: 0; padding: 0; }
+.list { display: flex; flex-direction: column; gap: 8px; }
+
+.row {
+  width: 100%;
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  text-align: left;
+}
+.row.compact { padding: 10px 0; background: none; align-items: center; }
+.row.compact.active { color: var(--accent); }
+.row-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.row-title { font-weight: 600; }
+.row-subtitle, .row-hint { color: var(--hint); font-size: 13px; }
+.row-warning { color: #ff9500; font-size: 13px; }
+.row-amount { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.row-right { display: flex; align-items: center; gap: 8px; }
+.amount { font-weight: 600; white-space: nowrap; }
+
+.badge {
+  align-self: flex-start;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid;
+}
+
+.kv { display: flex; justify-content: space-between; gap: 10px; }
+.kv-label { color: var(--hint); font-size: 14px; }
+.kv-value { text-align: right; }
+
+.deal-sub { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.actions { display: flex; gap: 8px; }
+.actions.column { flex-direction: column; }
+.actions button { flex: 1; }
+
+button.primary, button.secondary {
+  padding: 13px 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+button.primary { background: var(--accent); color: var(--accent-text); }
+button.secondary { background: rgba(120, 120, 128, 0.14); color: var(--text); }
+button.secondary.danger { color: var(--danger); }
+button:disabled { opacity: 0.5; }
+
+.form { display: flex; flex-direction: column; gap: 8px; }
+.form label { font-size: 13px; color: var(--hint); }
+.form input {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(120, 120, 128, 0.2);
+  background: var(--bg);
+  color: var(--text);
+  width: 100%;
+}
+.amount-input { font-size: 24px; font-weight: 600; }
+
+.switch { display: flex; background: rgba(120, 120, 128, 0.14); border-radius: 10px; padding: 3px; }
+.switch-option { flex: 1; padding: 9px; border-radius: 8px; font-size: 15px; text-align: center; }
+.switch-option.active { background: var(--card); font-weight: 600; }
+
+.calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.weekday { text-align: center; font-size: 12px; color: var(--hint); padding-bottom: 4px; }
+.day {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+.day.today .day-number { color: var(--accent); font-weight: 700; }
+.day.selected { background: var(--accent); color: var(--accent-text); }
+.day-number { font-size: 15px; }
+.day-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+.payment, .stat { display: flex; flex-direction: column; gap: 2px; padding: 8px 0; }
+.stat-name { font-weight: 600; }
+
+.timeline { display: flex; flex-direction: column; gap: 12px; }
+.timeline li { display: flex; gap: 10px; align-items: flex-start; }
+.timeline li > div { display: flex; flex-direction: column; }
+.timeline-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent); margin-top: 6px; flex-shrink: 0;
+}
+
+.fab {
+  position: fixed;
+  right: 16px;
+  bottom: 88px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 30px;
+  line-height: 1;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+.tabbar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  display: flex;
+  background: var(--card);
+  border-top: 1px solid rgba(120, 120, 128, 0.16);
+  padding: 6px 0 max(6px, env(safe-area-inset-bottom));
+}
+.tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px; }
+.tab-icon { font-size: 20px; }
+.tab-label { font-size: 11px; color: var(--hint); }
+.tab.active .tab-label { color: var(--accent); }
+
+.loader, .empty { padding: 40px 16px; text-align: center; color: var(--hint); }
