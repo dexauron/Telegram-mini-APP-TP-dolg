@@ -16,7 +16,14 @@ PGBIN="${PGBIN:-/usr/lib/postgresql/16/bin}"
 PORT="${PGTEST_PORT:-5433}"
 DB=mostdolgov
 
-psql_as() { su postgres -c "psql -h $WORK/run -p $PORT $*"; }
+# Локально скрипт запускают под root, в CI — под обычным пользователем с sudo.
+if [ "$(id -u)" = "0" ]; then
+  as_postgres() { su postgres -c "$1"; }
+else
+  as_postgres() { sudo -u postgres bash -c "$1"; }
+fi
+
+psql_as() { as_postgres "psql -h $WORK/run -p $PORT $*"; }
 
 echo "==> Готовим временный кластер в $WORK"
 rm -rf "$WORK"
@@ -24,10 +31,10 @@ mkdir -p "$WORK/data" "$WORK/run"
 chown -R postgres:postgres "$WORK"
 chmod 755 "$WORK"
 
-su postgres -c "$PGBIN/initdb -D $WORK/data -A trust" >/dev/null
-su postgres -c "$PGBIN/pg_ctl -D $WORK/data \
+as_postgres "$PGBIN/initdb -D $WORK/data -A trust" >/dev/null
+as_postgres "$PGBIN/pg_ctl -D $WORK/data \
   -o '-k $WORK/run -p $PORT -c listen_addresses=' -l $WORK/pg.log start" >/dev/null
-trap 'su postgres -c "$PGBIN/pg_ctl -D $WORK/data stop -m immediate" >/dev/null 2>&1 || true' EXIT
+trap 'as_postgres "$PGBIN/pg_ctl -D $WORK/data stop -m immediate" >/dev/null 2>&1 || true' EXIT
 
 echo "==> Создаём роли и базу"
 psql_as "-d postgres -q -c \"create role anon nologin\" \

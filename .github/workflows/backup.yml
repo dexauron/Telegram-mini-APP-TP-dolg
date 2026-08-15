@@ -1,0 +1,63 @@
+name: Резервная копия базы
+
+# На бесплатном тарифе Supabase нет восстановления на точку во времени,
+# поэтому свои копии обязательны (Р-1). Дамп шифруется до выгрузки: внутри
+# данные пользователей, и попадать в открытый вид они не должны.
+on:
+  schedule:
+    - cron: "0 1 * * *"   # 04:00 МСК, после ночных задач планировщика
+  workflow_dispatch:
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Проверить, что доступы заданы
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          if [ -z "$DB_URL" ] || [ -z "$PASSPHRASE" ]; then
+            echo "Нужны секреты SUPABASE_DB_URL и BACKUP_PASSPHRASE — см. docs/03-zapusk.md"
+            exit 1
+          fi
+
+      - name: Поставить pg_dump 17
+        run: |
+          sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/keyrings/pgdg.gpg
+          sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17
+
+      - name: Снять дамп и зашифровать
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          NAME="ugovor-$(date -u +%Y-%m-%d).sql.gz.gpg"
+          pg_dump "$DB_URL" --schema=app --no-owner --no-privileges \
+            | gzip -9 \
+            | gpg --batch --symmetric --cipher-algo AES256 \
+                  --passphrase "$PASSPHRASE" --output "$NAME"
+          ls -lh "$NAME"
+          echo "NAME=$NAME" >> "$GITHUB_ENV"
+
+      # Хранилище по умолчанию — артефакты GitHub. Если заданы доступы к R2 или
+      # B2, копия уезжает ещё и туда: артефакты живут ограниченное время.
+      - name: Сохранить как артефакт
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.NAME }}
+          path: ${{ env.NAME }}
+          retention-days: 30
+
+      - name: Выгрузить в объектное хранилище
+        if: ${{ secrets.S3_ENDPOINT != '' }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_KEY }}
+          S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+        run: aws s3 cp "$NAME" "s3://$S3_BUCKET/$NAME" --endpoint-url "$S3_ENDPOINT"

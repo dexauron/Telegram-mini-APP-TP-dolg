@@ -14,6 +14,7 @@ Telegram Mini App для фиксации договорённостей об о
 | [`docs/00-analiz-tz.md`](docs/00-analiz-tz.md) | Сравнительный анализ двух исходных ТЗ: противоречия, ограничения Telegram API, правовые риски |
 | [`docs/01-resheniya.md`](docs/01-resheniya.md) | **Принятые решения (ADR).** При расхождении с исходными ТЗ приоритет у этого документа |
 | [`docs/02-masshtabirovanie.md`](docs/02-masshtabirovanie.md) | Расчёт нагрузки до 500 000 пользователей, лестница расходов, правила для фронтенда |
+| [`docs/03-zapusk.md`](docs/03-zapusk.md) | **Пошаговый запуск:** бот, Supabase, Cloudflare, бэкапы, проверка и разбор частых ошибок |
 | [`docs/tz-1-most-dolgov.md`](docs/tz-1-most-dolgov.md) | Исходное продуктовое ТЗ |
 | [`docs/tz-2-b2b-platforma.md`](docs/tz-2-b2b-platforma.md) | Исходное архитектурное ТЗ |
 
@@ -49,6 +50,8 @@ supabase/functions/          Edge Functions
   report/                    отчёты текстом и таблицей, доставка ботом
   attachment/                пересылка вложений пользователю по запросу
 web/                         Mini App: React + TypeScript + Vite
+scripts/check-deploy.sh      проверка развёрнутого сервиса
+.github/workflows/           тесты на каждый push, ночная резервная копия
 ```
 
 ### Тесты
@@ -95,6 +98,10 @@ cd web && npm run build && npm run smoke  # интерфейс в настоящ
 и без него `app.rpc_accept_deal` сделку не примет.
 
 ## Развёртывание
+
+Ниже — краткая версия. Пошаговая инструкция со скриншотными подсказками, настройкой
+резервных копий и разбором типичных ошибок — в [`docs/03-zapusk.md`](docs/03-zapusk.md).
+После деплоя запустите `scripts/check-deploy.sh` — он проверит, что всё поднялось.
 
 ### 1. Supabase (бесплатный тариф)
 
