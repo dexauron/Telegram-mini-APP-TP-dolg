@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { callRpc, db, type AuthResult, type Profile } from "../api/client";
 import { formatMoney } from "../lib/format";
 import { tg } from "../lib/telegram";
+import { ReportsCard } from "./ReportsCard";
 
 interface Settings {
   remind_days_before: number[];
@@ -125,6 +126,8 @@ export function ProfileScreen({
           </ul>
         )}
       </section>
+
+      <ReportsCard profile={profile} />
 
       {settings && (
         <section className="card">

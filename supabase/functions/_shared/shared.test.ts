@@ -6,6 +6,7 @@ import { formatMoney, formatDate, plural, statusLabel, dealCardText } from "./fo
 import { verifyInitData } from "./telegram.ts";
 import { signUserToken } from "./jwt.ts";
 import { renderMessage } from "./messages.ts";
+import { reportAsText, reportAsCsv, reportFileName } from "./report.ts";
 
 const TODAY = "2026-08-15";
 const BOT_TOKEN = "123456:TEST-TOKEN-FOR-TESTS";
@@ -136,6 +137,48 @@ ok(!digest?.keyboard, "у сводки кнопок нет");
 
 eq(renderMessage({ id: 3, kind: "unknown.kind", telegram_id: 1, payload: {} }, TODAY), null,
   "неизвестный тип уведомления не роняет рассыльщик");
+
+// --- Отчёты -----------------------------------------------------------------
+const report = {
+  period: { from: "2026-08-01", to: "2026-08-31" },
+  profile: { id: "p1", name: "ИП Алиса" },
+  rows: [
+    {
+      id: "11111111-2222-3333-4444-555555555555",
+      created_at: "2026-08-01T10:00:00Z", due_date: "2026-08-10",
+      counterparty: "Магазин «Заря»", amount_minor: 4500000, paid_minor: 0,
+      remaining_minor: 4500000, status: "accepted",
+      description: 'Молоко "отборное"', i_owe: false, is_overdue: true,
+    },
+    {
+      id: "66666666-7777-8888-9999-000000000000",
+      created_at: "2026-08-05T10:00:00Z", due_date: "2026-08-20",
+      counterparty: "Оптбаза", amount_minor: 1280000, paid_minor: 500000,
+      remaining_minor: 780000, status: "accepted",
+      description: null, i_owe: true, is_overdue: false,
+    },
+  ],
+  totals: {
+    count: 2, owed_to_me_minor: 4500000, i_owe_minor: 780000,
+    completed_minor: 0, overdue_count: 1, overdue_minor: 4500000,
+  },
+};
+
+const text = reportAsText(report, TODAY);
+ok(text.includes("ИП Алиса"), "в отчёте есть название профиля");
+ok(text.includes("Просрочено: 1 запись"), "в отчёте правильное склонение просрочек");
+ok(text.includes("Магазин «Заря»"), "в отчёте перечислены записи");
+ok(!text.includes("<b>"), "текстовый отчёт без разметки — его шлют в любой мессенджер");
+
+const csv = reportAsCsv(report);
+const csvLines = csv.split("\r\n");
+ok(csv.startsWith("\ufeff"), "CSV начинается с BOM, иначе Excel ломает кириллицу");
+ok(csvLines[0].split(";").length === 10, "в шапке таблицы все колонки");
+ok(csvLines[1].includes("10.08.2026"), "даты в привычном формате");
+ok(csvLines[1].includes("45000,00"), "суммы с запятой как разделителем");
+ok(csvLines[1].includes('""отборное""'), "кавычки в описании экранированы");
+ok(csv.includes("Итого мне должны"), "в таблице есть итоги");
+eq(reportFileName(report), "most-dolgov_2026-08-01_2026-08-31.csv", "имя файла с периодом");
 
 console.log(`\nОбщие модули: пройдено ${passed} из ${passed + failures.length}`);
 if (failures.length) {

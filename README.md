@@ -45,6 +45,7 @@ supabase/functions/          Edge Functions
   auth/                      обмен initData на JWT
   telegram-webhook/          бот: инлайн-режим, deep link, кнопки
   outbox-worker/             рассылка уведомлений с учётом лимитов Telegram
+  report/                    отчёты текстом и таблицей, доставка ботом
 web/                         Mini App: React + TypeScript + Vite
 ```
 
@@ -141,6 +142,7 @@ on conflict (key) do update set value = excluded.value;
 supabase functions deploy auth --no-verify-jwt
 supabase functions deploy telegram-webhook --no-verify-jwt
 supabase functions deploy outbox-worker --no-verify-jwt
+supabase functions deploy report --no-verify-jwt
 ```
 
 Подключите вебхук (секрет должен совпадать с `TELEGRAM_WEBHOOK_SECRET`):
@@ -176,8 +178,13 @@ Cloudflare Pages: корневой каталог `web`, сборка `npm run b
   действий, действия по статусу: подтвердить, отметить оплату, предложить условия,
   перенести срок по остатку, предложить аннулирование.
 - **Календарь** — месяц с цветными отметками, сводка по дню и за месяц.
-- **Профиль** — переключение профилей, приватная статистика по контрагентам, настройки
-  напоминаний.
+- **Профиль** — переключение профилей, приватная статистика по контрагентам, отчёты
+  за период, настройки напоминаний.
+
+Отчёт формируется на сервере и приходит от бота в личный чат: текстом — чтобы переслать
+руководителю, таблицей CSV — для бухгалтерии. Доступ к приложению получателю не нужен
+(FR-085). Файл открывается в Excel без настройки импорта: разделитель «;», кодировка
+UTF-8 с BOM, суммы с запятой.
 
 ## Стоимость
 
