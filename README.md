@@ -37,22 +37,32 @@ Mini App (Cloudflare) ───┘                                     │
 ### Структура репозитория
 
 ```
-docs/                     анализ ТЗ и принятые решения
-supabase/migrations/      схема БД, RLS, RPC, планировщик
-supabase/tests/           сквозной тест машины состояний
+docs/                        анализ ТЗ и принятые решения
+supabase/migrations/         схема БД, RLS, RPC, планировщик
+supabase/tests/              сквозной тест машины состояний
+supabase/functions/          Edge Functions
+  _shared/                   разбор сообщений, форматирование, подпись Telegram, JWT
+  auth/                      обмен initData на JWT
+  telegram-webhook/          бот: инлайн-режим, deep link, кнопки
+  outbox-worker/             рассылка уведомлений с учётом лимитов Telegram
 ```
 
 ### Тесты
 
 ```bash
-supabase/tests/run.sh
+supabase/tests/run.sh                    # база: миграции + машина состояний
+supabase/functions/_shared/run-tests.sh  # разбор сообщений, форматирование, подпись, JWT
 ```
 
-Скрипт поднимает временный Postgres, имитирует окружение Supabase, накатывает все
-миграции и прогоняет сквозной сценарий: создание сделки, акцепт, частичная оплата,
-переговоры, сплит остатка, заморозка спора, аннулирование по согласию. Заодно
-проверяется изоляция данных — посторонний пользователь не видит ни сделок, ни
+Первый скрипт поднимает временный Postgres, имитирует окружение Supabase, накатывает
+все миграции и прогоняет сквозной сценарий: создание сделки, акцепт, частичная оплата,
+переговоры, сплит остатка, заморозка спора, аннулирование по согласию, ежедневные
+сводки. Заодно проверяется изоляция данных — посторонний не видит ни сделок, ни
 статистики и не может перехватить чужую карточку.
+
+Второй проверяет разбор фраз вроде «5000 руб за молоко, оплата 15 августа», русские
+склонения и форматы сумм, а также отклонение поддельного и просроченного `initData`.
+Зависимостей и сети не требуется — только Node 22.
 
 ## Схема данных
 
@@ -102,16 +112,50 @@ on conflict (key) do update set value = excluded.value;
 ### 2. Бот
 
 1. Создайте бота у [@BotFather](https://t.me/BotFather), сохраните токен.
-2. `/setinline` — включите инлайн-режим (без этого не работает создание сделки из чата).
-3. `/setinlinefeedback` — включите обратную связь, иначе бот не узнает о выборе карточки.
+2. `/setinline` — включите инлайн-режим (без этого не работает создание записи из чата).
+3. `/setinlinefeedback` — включите обратную связь, иначе бот не узнает о выборе карточки
+   и не сможет дописать в неё кнопку подтверждения.
 4. `/setmenubutton` — укажите URL Mini App.
 
-### 3. Фронтенд
+### 3. Edge Functions
+
+Секреты (Project Settings → Edge Functions → Secrets):
+
+| Переменная | Что это |
+|---|---|
+| `TELEGRAM_BOT_TOKEN` | токен от @BotFather |
+| `TELEGRAM_BOT_USERNAME` | имя бота без `@` — из него собираются ссылки-приглашения |
+| `TELEGRAM_WEBHOOK_SECRET` | любая случайная строка, ею подписывается вебхук |
+| `MINI_APP_URL` | адрес Mini App на Cloudflare Pages |
+| `SUPABASE_JWT_SECRET` | из Settings → API, им подписываются токены пользователей |
+
+`SUPABASE_URL` и `SUPABASE_SERVICE_ROLE_KEY` Supabase подставляет сам.
+
+```bash
+# Ни Telegram, ни Mini App не присылают Supabase-JWT — свои проверки внутри функций.
+supabase functions deploy auth --no-verify-jwt
+supabase functions deploy telegram-webhook --no-verify-jwt
+supabase functions deploy outbox-worker --no-verify-jwt
+```
+
+Подключите вебхук (секрет должен совпадать с `TELEGRAM_WEBHOOK_SECRET`):
+
+```bash
+curl -X POST "https://api.telegram.org/bot<ТОКЕН>/setWebhook" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://<ref>.supabase.co/functions/v1/telegram-webhook",
+    "secret_token": "<TELEGRAM_WEBHOOK_SECRET>",
+    "allowed_updates": ["message","inline_query","chosen_inline_result","callback_query","my_chat_member"]
+  }'
+```
+
+### 4. Фронтенд
 
 Cloudflare Pages, сборка `npm run build`, каталог `dist`. Переменные окружения —
 URL проекта Supabase и `anon`-ключ.
 
-> Раздел дополняется по мере реализации Edge Functions и клиента.
+> Раздел дополняется по мере реализации клиента.
 
 ## Стоимость
 
