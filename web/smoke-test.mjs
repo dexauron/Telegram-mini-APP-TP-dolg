@@ -137,7 +137,7 @@ await page.waitForSelector("text=Магазин «Заря»", { timeout: 5000 }
 console.log("OK: список записей отрисован");
 await page.screenshot({ path: `${OUT}/02-zapisi.png` });
 
-const overdue = await page.locator("text=/просрочка 4 дня/").count();
+const overdue = await page.locator("text=/4 дня просрочки/").count();
 console.log(overdue ? "OK: просрочка посчитана и подписана верно" : "ОШИБКА: нет отметки просрочки");
 
 await page.click("text=Календарь");

@@ -3,6 +3,7 @@ import type { Profile } from "../api/client";
 import { requestReport } from "../api/reports";
 import { todayMsk, formatDate } from "../lib/format";
 import { haptic } from "../lib/telegram";
+import { Group } from "../components/Loader";
 
 type Period = "week" | "month" | "quarter" | "custom";
 
@@ -63,14 +64,16 @@ export function ReportsCard({ profile }: { profile: Profile }) {
   };
 
   return (
-    <section className="card">
-      <h2>Отчёты</h2>
-
-      <div className="chips">
+    <Group
+      title="Отчёты"
+      footer="Отчёт приходит в чат с ботом. Оттуда его можно переслать кому угодно — доступ к приложению получателю не нужен."
+      padded
+    >
+      <div className="filters" style={{ padding: 0 }}>
         {PERIODS.map((p) => (
           <button
             key={p.id}
-            className={period === p.id ? "chip active" : "chip"}
+            className={period === p.id ? "filter active" : "filter"}
             onClick={() => setPeriod(p.id)}
           >
             {p.label}
@@ -80,12 +83,16 @@ export function ReportsCard({ profile }: { profile: Profile }) {
 
       {period === "custom" ? (
         <div className="form">
-          <label>С какого числа</label>
-          <input type="date" value={custom.from}
-            onChange={(e) => setCustom({ ...custom, from: e.target.value })} />
-          <label>По какое</label>
-          <input type="date" value={custom.to}
-            onChange={(e) => setCustom({ ...custom, to: e.target.value })} />
+          <div className="field" style={{ padding: "11px 0" }}>
+            <label>С какого числа</label>
+            <input type="date" value={custom.from}
+              onChange={(e) => setCustom({ ...custom, from: e.target.value })} />
+          </div>
+          <div className="field" style={{ padding: "11px 0" }}>
+            <label>По какое</label>
+            <input type="date" value={custom.to}
+              onChange={(e) => setCustom({ ...custom, to: e.target.value })} />
+          </div>
         </div>
       ) : (
         <p className="hint">
@@ -94,20 +101,15 @@ export function ReportsCard({ profile }: { profile: Profile }) {
       )}
 
       <div className="actions column">
-        <button className="primary" disabled={busy !== null} onClick={() => send("text")}>
+        <button className="filled" disabled={busy !== null} onClick={() => send("text")}>
           {busy === "text" ? "Формируем…" : "Отчёт текстом"}
         </button>
-        <button className="secondary" disabled={busy !== null} onClick={() => send("csv")}>
+        <button className="tinted" disabled={busy !== null} onClick={() => send("csv")}>
           {busy === "csv" ? "Формируем…" : "Таблица для бухгалтерии"}
         </button>
       </div>
 
       {done && <p className="hint">{done}</p>}
-
-      <p className="hint">
-        Отчёт приходит в чат с ботом. Оттуда его можно переслать кому угодно —
-        доступ к приложению получателю не нужен.
-      </p>
-    </section>
+    </Group>
   );
 }

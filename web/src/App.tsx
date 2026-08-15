@@ -16,10 +16,11 @@ type Route =
   | { name: "deal"; dealId: string }
   | { name: "new" };
 
+// Р-13: навигация без иконок — только подписи, активный раздел выделен цветом.
 const TABS = [
-  { name: "deals", icon: "📋", label: "Записи" },
-  { name: "calendar", icon: "📅", label: "Календарь" },
-  { name: "profile", icon: "👤", label: "Профиль" },
+  { name: "deals", label: "Записи" },
+  { name: "calendar", label: "Календарь" },
+  { name: "profile", label: "Профиль" },
 ] as const;
 
 export function App() {
@@ -89,7 +90,7 @@ export function App() {
             только то, что передаёт Telegram.
           </p>
           <button
-            className="primary"
+            className="filled"
             onClick={async () => {
               await acceptTos();
               setTosAccepted(true);
@@ -128,8 +129,7 @@ export function App() {
               className={route.name === tab.name ? "tab active" : "tab"}
               onClick={() => setRoute({ name: tab.name } as Route)}
             >
-              <span className="tab-icon">{tab.icon}</span>
-              <span className="tab-label">{tab.label}</span>
+              {tab.label}
             </button>
           ))}
         </nav>

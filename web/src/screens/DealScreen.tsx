@@ -9,7 +9,7 @@ import { db } from "../api/client";
 import type { Profile } from "../api/client";
 import { formatMoney, formatDate, todayMsk, inputToMinor, plural } from "../lib/format";
 import { StatusBadge } from "../components/StatusBadge";
-import { Loader } from "../components/Loader";
+import { Loader, Group } from "../components/Loader";
 import { confirm, haptic } from "../lib/telegram";
 
 const ACTION_LABEL: Record<string, string> = {
@@ -118,9 +118,9 @@ export function DealScreen({
   return (
     <div className="screen">
       <header className="header">
-        <button className="link" onClick={onBack}>‹ Назад</button>
+        <button className="nav-back" onClick={onBack}>‹ Назад</button>
         <h1>{formatMoney(deal.amount_minor)}</h1>
-        <div className="deal-sub">
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", paddingBottom: 4 }}>
           <StatusBadge status={deal.status} isOverdue={deal.is_overdue} />
           <span className="hint">
             {iAmDebtor ? "Я должен" : "Мне должны"} · {counterparty || "ждёт контрагента"}
@@ -128,7 +128,7 @@ export function DealScreen({
         </div>
       </header>
 
-      <section className="card">
+      <Group>
         <Row label="Срок оплаты" value={formatDate(deal.due_date, today)} />
         {deal.is_overdue && (
           <Row
@@ -144,12 +144,11 @@ export function DealScreen({
           </>
         )}
         {deal.description && <Row label="Описание" value={deal.description} />}
-      </section>
+      </Group>
 
       {/* ТЗ-2 III.2: «было / стало» — без этого непонятно, на что соглашаешься. */}
       {deal.proposed_changes && (
-        <section className="card proposal">
-          <h2>{deal.proposed_changes.cancel ? "Предложено аннулировать" : "Предложены новые условия"}</h2>
+        <Group title={deal.proposed_changes.cancel ? "Предложено аннулировать" : "Предложены новые условия"}>
           {deal.proposed_changes.amount_minor !== undefined && (
             <Row
               label="Сумма"
@@ -166,27 +165,26 @@ export function DealScreen({
             <Row label="Комментарий" value={deal.proposed_changes.comment} />
           )}
           {proposalIsMine ? (
-            <p className="hint">Ждём ответа контрагента.</p>
+            <p className="hint" style={{ padding: "11px 16px" }}>Ждём ответа контрагента.</p>
           ) : (
-            <div className="actions">
-              <button className="primary" disabled={busy}
+            <div className="actions" style={{ padding: 16 }}>
+              <button className="filled" disabled={busy}
                 onClick={() => run(() => respondProposal(deal.id, true))}>
                 Принять
               </button>
               {deal.status !== "frozen" && (
-                <button className="secondary" disabled={busy}
+                <button className="tinted" disabled={busy}
                   onClick={() => run(() => respondProposal(deal.id, false))}>
                   Не согласен
                 </button>
               )}
             </div>
           )}
-        </section>
+        </Group>
       )}
 
       {claimed && (
-        <section className="card">
-          <h2>Заявлена оплата {formatMoney(claimed.amount_minor)}</h2>
+        <Group title={`Заявлена оплата ${formatMoney(claimed.amount_minor)}`} padded>
           {claimedByMe ? (
             <p className="hint">
               Ждём подтверждения контрагента. Если он промолчит, платёж засчитается
@@ -195,28 +193,28 @@ export function DealScreen({
             </p>
           ) : (
             <div className="actions">
-              <button className="primary" disabled={busy}
+              <button className="filled" disabled={busy}
                 onClick={() => run(() => resolvePayment(claimed.id, true))}>
                 Подтвердить получение
               </button>
-              <button className="secondary danger" disabled={busy}
+              <button className="tinted destructive" disabled={busy}
                 onClick={() => run(() => resolvePayment(claimed.id, false))}>
                 Не получал
               </button>
             </div>
           )}
-        </section>
+        </Group>
       )}
 
       {/* Действия зависят от статуса и от того, кто вы в этой сделке. */}
-      <section className="card">
+      <Group padded>
         {deal.status === "pending" && !iAmInitiator && (
           <div className="actions">
-            <button className="primary" disabled={busy}
+            <button className="filled" disabled={busy}
               onClick={() => run(() => acceptDeal(deal.id, profile.id))}>
               Подтвердить запись
             </button>
-            <button className="secondary danger" disabled={busy}
+            <button className="tinted destructive" disabled={busy}
               onClick={() => run(() => declineDeal(deal.id))}>
               Отклонить
             </button>
@@ -226,7 +224,7 @@ export function DealScreen({
         {deal.status === "pending" && iAmInitiator && (
           <>
             <p className="hint">Ждём подтверждения контрагента.</p>
-            <button className="secondary danger" disabled={busy}
+            <button className="tinted destructive" disabled={busy}
               onClick={() => run(() => declineDeal(deal.id, "отозвано создателем"))}>
               Отозвать
             </button>
@@ -236,7 +234,7 @@ export function DealScreen({
         {isOpen && !claimed && (
           <div className="actions column">
             {form !== "pay" ? (
-              <button className="primary" onClick={() => {
+              <button className="filled" onClick={() => {
                 setForm("pay");
                 setAmountInput(String(Math.floor(deal.remaining_minor / 100)));
               }}>
@@ -244,11 +242,13 @@ export function DealScreen({
               </button>
             ) : (
               <div className="form">
-                <label>Сумма, ₽</label>
-                <input inputMode="decimal" value={amountInput}
-                  onChange={(e) => setAmountInput(e.target.value)} />
+                <div className="field amount-field">
+                  <label>Сумма, ₽</label>
+                  <input inputMode="decimal" value={amountInput}
+                    onChange={(e) => setAmountInput(e.target.value)} />
+                </div>
                 <div className="actions">
-                  <button className="primary" disabled={busy} onClick={() => {
+                  <button className="filled" disabled={busy} onClick={() => {
                     const minor = inputToMinor(amountInput);
                     if (!minor) return alert("Введите сумму, например 4500");
                     if (minor > deal.remaining_minor) return alert("Больше остатка по записи");
@@ -256,14 +256,14 @@ export function DealScreen({
                   }}>
                     Отметить
                   </button>
-                  <button className="secondary" onClick={() => setForm(null)}>Отмена</button>
+                  <button className="tinted" onClick={() => setForm(null)}>Отмена</button>
                 </div>
               </div>
             )}
 
             {deal.status !== "frozen" && !deal.proposed_changes && (
               form !== "propose" ? (
-                <button className="secondary" onClick={() => {
+                <button className="tinted" onClick={() => {
                   setForm("propose");
                   setDateInput(deal.due_date);
                   setAmountInput(String(Math.floor(deal.amount_minor / 100)));
@@ -275,14 +275,18 @@ export function DealScreen({
                   <p className="hint">
                     Изменить условия в одиночку нельзя — контрагент должен согласиться.
                   </p>
-                  <label>Сумма, ₽</label>
-                  <input inputMode="decimal" value={amountInput}
-                    onChange={(e) => setAmountInput(e.target.value)} />
-                  <label>Новый срок</label>
-                  <input type="date" value={dateInput}
-                    onChange={(e) => setDateInput(e.target.value)} />
+                  <div className="field amount-field">
+                    <label>Сумма, ₽</label>
+                    <input inputMode="decimal" value={amountInput}
+                      onChange={(e) => setAmountInput(e.target.value)} />
+                  </div>
+                  <div className="field">
+                    <label>Новый срок</label>
+                    <input type="date" value={dateInput}
+                      onChange={(e) => setDateInput(e.target.value)} />
+                  </div>
                   <div className="actions">
-                    <button className="primary" disabled={busy} onClick={() => {
+                    <button className="filled" disabled={busy} onClick={() => {
                       const minor = inputToMinor(amountInput);
                       const changedAmount = minor !== deal.amount_minor ? minor : null;
                       const changedDate = dateInput !== deal.due_date ? dateInput : null;
@@ -291,7 +295,7 @@ export function DealScreen({
                     }}>
                       Отправить предложение
                     </button>
-                    <button className="secondary" onClick={() => setForm(null)}>Отмена</button>
+                    <button className="tinted" onClick={() => setForm(null)}>Отмена</button>
                   </div>
                 </div>
               )
@@ -300,7 +304,7 @@ export function DealScreen({
             {/* Р-4: перенос срока по остатку — это отдельная запись с новым акцептом. */}
             {deal.paid_minor > 0 && deal.status === "accepted" && (
               form !== "split" ? (
-                <button className="secondary" onClick={() => {
+                <button className="tinted" onClick={() => {
                   setForm("split");
                   setDateInput(deal.due_date);
                 }}>
@@ -313,22 +317,24 @@ export function DealScreen({
                     {" "}{formatMoney(deal.remaining_minor)} создастся новая — с новым сроком,
                     который контрагент должен подтвердить.
                   </p>
-                  <label>Новый срок для остатка</label>
-                  <input type="date" value={dateInput}
-                    onChange={(e) => setDateInput(e.target.value)} />
+                  <div className="field">
+                    <label>Новый срок для остатка</label>
+                    <input type="date" value={dateInput}
+                      onChange={(e) => setDateInput(e.target.value)} />
+                  </div>
                   <div className="actions">
-                    <button className="primary" disabled={busy}
+                    <button className="filled" disabled={busy}
                       onClick={() => run(() => proposeSplit(deal.id, dateInput))}>
                       Создать запись на остаток
                     </button>
-                    <button className="secondary" onClick={() => setForm(null)}>Отмена</button>
+                    <button className="tinted" onClick={() => setForm(null)}>Отмена</button>
                   </div>
                 </div>
               )
             )}
 
             {!deal.proposed_changes && (
-              <button className="secondary danger" disabled={busy} onClick={async () => {
+              <button className="tinted destructive" disabled={busy} onClick={async () => {
                 // Р-9: односторонне долг не обнуляется, это именно предложение.
                 if (await confirm("Предложить контрагенту аннулировать запись?")) {
                   void run(() => proposeCancel(deal.id));
@@ -342,16 +348,15 @@ export function DealScreen({
 
         {deal.status === "completed" && <p className="hint">Запись закрыта, долг погашен.</p>}
         {deal.status === "cancelled" && <p className="hint">Запись аннулирована.</p>}
-      </section>
+      </Group>
 
       {payments.length > 0 && (
-        <section className="card">
-          <h2>Платежи</h2>
-          <ul className="plain">
+        <Group title="Платежи">
+          <ul className="list">
             {payments.map((p) => (
-              <li key={p.id} className="payment">
-                <span>{formatMoney(p.amount_minor)}</span>
-                <span className="hint">
+              <li key={p.id} className="cell">
+                <span className="cell-title">{formatMoney(p.amount_minor)}</span>
+                <span className="cell-sub">
                   {formatDate(p.paid_on, today)} ·{" "}
                   {p.status === "confirmed"
                     ? p.auto_confirmed ? "засчитан автоматически" : "подтверждён"
@@ -360,17 +365,16 @@ export function DealScreen({
               </li>
             ))}
           </ul>
-        </section>
+        </Group>
       )}
 
       {/* FR-034: история действий как доказательство при споре. */}
-      <section className="card">
-        <h2>История</h2>
+      <Group title="История">
         <ul className="timeline">
           {history.map((entry) => (
             <li key={entry.id}>
               <span className="timeline-dot" />
-              <div>
+              <div className="timeline-body">
                 <span>{ACTION_LABEL[entry.action] ?? entry.action}</span>
                 <span className="hint">
                   {new Date(entry.created_at).toLocaleString("ru-RU", {
@@ -381,16 +385,16 @@ export function DealScreen({
             </li>
           ))}
         </ul>
-      </section>
+      </Group>
     </div>
   );
 }
 
 function Row({ label, value, danger }: { label: string; value: string; danger?: boolean }) {
   return (
-    <div className="kv">
-      <span className="kv-label">{label}</span>
-      <span className={danger ? "kv-value danger" : "kv-value"}>{value}</span>
+    <div className="cell">
+      <span className="cell-title">{label}</span>
+      <span className={danger ? "cell-value danger" : "cell-value"}>{value}</span>
     </div>
   );
 }

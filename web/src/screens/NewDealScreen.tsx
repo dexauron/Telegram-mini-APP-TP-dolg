@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createDeal, dealInviteToken } from "../api/deals";
 import type { Profile } from "../api/client";
 import { inputToMinor, todayMsk, formatMoney, formatDate } from "../lib/format";
+import { Group } from "../components/Loader";
 import { haptic, tg } from "../lib/telegram";
 
 export function NewDealScreen({
@@ -58,24 +59,24 @@ export function NewDealScreen({
         <header className="header">
           <h1>Запись создана</h1>
         </header>
-        <section className="card">
-          <p>
-            {formatMoney(created.amountMinor)}, срок {formatDate(dueDate, today)}.
-            Запись начнёт действовать, когда контрагент её подтвердит.
-          </p>
+
+        <Group
+          footer="Если контрагент ещё не пользуется приложением, ссылка приведёт его сюда с готовой записью."
+          padded
+        >
           <p className="hint">
-            Отправьте карточку контрагенту — он подтвердит её одной кнопкой. Если он ещё
-            не пользуется приложением, ссылка приведёт его сюда с готовой записью.
+            {formatMoney(created.amountMinor)}, срок {formatDate(dueDate, today)}. Запись
+            начнёт действовать, когда контрагент её подтвердит.
           </p>
           <div className="actions column">
             {created.link && (
-              <button className="primary" onClick={() => tg?.openTelegramLink(created.link)}>
+              <button className="filled" onClick={() => tg?.openTelegramLink(created.link)}>
                 Отправить контрагенту
               </button>
             )}
-            <button className="secondary" onClick={onDone}>Готово</button>
+            <button className="tinted" onClick={onDone}>Готово</button>
           </div>
-        </section>
+        </Group>
       </div>
     );
   }
@@ -83,59 +84,60 @@ export function NewDealScreen({
   return (
     <div className="screen">
       <header className="header">
-        <button className="link" onClick={onCancel}>‹ Отмена</button>
+        <button className="nav-back" onClick={onCancel}>‹ Отмена</button>
         <h1>Новая запись</h1>
       </header>
 
-      <section className="card">
+      <Group>
         <div className="form">
-          <label>Сумма, ₽</label>
-          <input
-            className="amount-input"
-            inputMode="decimal"
-            autoFocus
-            placeholder="45000"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
+          <div className="field amount-field">
+            <label htmlFor="amount">Сумма, ₽</label>
+            <input
+              id="amount"
+              inputMode="decimal"
+              autoFocus
+              placeholder="45 000"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="due">Срок оплаты</label>
+            <input id="due" type="date" value={dueDate} min={today}
+              onChange={(e) => setDueDate(e.target.value)} />
+          </div>
+          <div className="field">
+            <label htmlFor="what">За что</label>
+            <input id="what" placeholder="Молоко, 200 л" value={description}
+              onChange={(e) => setDescription(e.target.value)} />
+          </div>
+        </div>
+      </Group>
 
-          <label>Срок оплаты</label>
-          <input type="date" value={dueDate} min={today}
-            onChange={(e) => setDueDate(e.target.value)} />
-
-          <label>За что</label>
-          <input
-            placeholder="Молоко, 200 л"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-
-          <div className="switch">
+      <Group title="Кто кому должен">
+        <div className="card padded">
+          <div className="segmented">
             <button
-              className={!iAmDebtor ? "switch-option active" : "switch-option"}
+              className={!iAmDebtor ? "segment active" : "segment"}
               onClick={() => setIAmDebtor(false)}
             >
               Мне должны
             </button>
             <button
-              className={iAmDebtor ? "switch-option active" : "switch-option"}
+              className={iAmDebtor ? "segment active" : "segment"}
               onClick={() => setIAmDebtor(true)}
             >
               Я должен
             </button>
           </div>
         </div>
-      </section>
+      </Group>
 
-      <section className="card">
-        <p className="hint">
-          Контрагентом станет тот, кто подтвердит запись по вашей ссылке. Проценты и пени
-          за просрочку система не начисляет.
-        </p>
-        <button className="primary" disabled={busy} onClick={submit}>
+      <Group footer="Контрагентом станет тот, кто подтвердит запись по вашей ссылке. Проценты и пени за просрочку система не начисляет." padded>
+        <button className="filled" disabled={busy} onClick={submit}>
           {busy ? "Создаём…" : "Создать запись"}
         </button>
-      </section>
+      </Group>
     </div>
   );
 }

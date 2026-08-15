@@ -3,6 +3,7 @@ import { callRpc, db, type AuthResult, type Profile } from "../api/client";
 import { formatMoney } from "../lib/format";
 import { tg } from "../lib/telegram";
 import { ReportsCard } from "./ReportsCard";
+import { Group } from "../components/Loader";
 
 interface Settings {
   remind_days_before: number[];
@@ -77,70 +78,72 @@ export function ProfileScreen({
         <h1>Профиль</h1>
       </header>
 
-      <section className="card">
-        <h2>{profile.name}</h2>
-        <p className="hint">
-          {profile.kind === "supplier" ? "Поставщик"
-            : profile.kind === "store" ? "Магазин" : "Поставщик и магазин"}
-        </p>
-        {session.profiles.length > 1 && (
-          <ul className="plain">
-            {session.profiles.map((p) => (
-              <li key={p.id}>
-                <button
-                  className={p.id === profile.id ? "row compact active" : "row compact"}
-                  onClick={() => onSelectProfile(p)}
-                >
-                  {p.name}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <Group>
+        <div className="cell">
+          <span className="cell-main">
+            <span className="cell-title strong">{profile.name}</span>
+            <span className="cell-sub">
+              {profile.kind === "supplier" ? "Поставщик"
+                : profile.kind === "store" ? "Магазин" : "Поставщик и магазин"}
+            </span>
+          </span>
+        </div>
+        {session.profiles.length > 1 && session.profiles.filter((p) => p.id !== profile.id).map((p) => (
+          <button key={p.id} className="cell" onClick={() => onSelectProfile(p)}>
+            <span className="cell-title">{p.name}</span>
+            <span className="cell-right"><span className="cell-value">Переключиться</span></span>
+          </button>
+        ))}
+      </Group>
 
       {/* Р-2: никаких звёзд и публичных отзывов — только история с теми,
           с кем реально работали, и видна она только вам двоим. */}
-      <section className="card">
-        <h2>История с контрагентами</h2>
+      <Group
+        title="История с контрагентами"
+        footer="Эта статистика видна только вам и вашему контрагенту. Публичных оценок в приложении нет."
+      >
         {stats.length === 0 ? (
-          <p className="hint">Пока нет завершённых сделок.</p>
+          <p className="hint" style={{ padding: "11px 16px" }}>Пока нет завершённых сделок.</p>
         ) : (
-          <ul className="plain">
+          <ul className="list">
             {stats.map((s) => (
-              <li key={s.counterparty_profile_id} className="stat">
-                <span className="stat-name">
+              <li key={s.counterparty_profile_id} className="cell">
+                <span className="cell-main">
+                <span className="cell-title strong">
                   {names[s.counterparty_profile_id] ?? "Контрагент"}
                 </span>
-                <span className="hint">
+                <span className="cell-sub">
                   {s.deals_completed} из {s.deals_total} закрыто
                   {s.deals_completed > 0 &&
                     `, вовремя ${Math.round((s.deals_completed_on_time / s.deals_completed) * 100)}%`}
                   {s.deals_overdue_now > 0 && ` · сейчас просрочено ${s.deals_overdue_now}`}
                 </span>
                 {s.outstanding_minor > 0 && (
-                  <span className="hint">Открыто на {formatMoney(s.outstanding_minor)}</span>
+                  <span className="cell-sub">Открыто на {formatMoney(s.outstanding_minor)}</span>
                 )}
+                </span>
               </li>
             ))}
           </ul>
         )}
-      </section>
+      </Group>
 
       <ReportsCard profile={profile} />
 
       {settings && (
-        <section className="card">
-          <h2>Напоминания</h2>
-
-          <p className="kv-label">Предупреждать до срока</p>
-          <div className="chips">
+        <Group
+          title="Напоминания"
+          footer={`Если контрагент не отвечает на отметку об оплате ${settings.payment_auto_confirm_days} дней, платёж засчитывается автоматически.`}
+          padded
+        >
+          <p className="hint small">Предупреждать до срока</p>
+          <div className="filters" style={{ padding: 0 }}>
             {REMIND_OPTIONS.map((day) => {
               const on = settings.remind_days_before.includes(day);
               return (
                 <button
                   key={day}
-                  className={on ? "chip active" : "chip"}
+                  className={on ? "filter active" : "filter"}
                   onClick={() => save({
                     remind_days_before: on
                       ? settings.remind_days_before.filter((d) => d !== day)
@@ -153,35 +156,27 @@ export function ProfileScreen({
             })}
           </div>
 
-          <p className="kv-label">Напоминать о просрочке</p>
-          <div className="chips">
+          <p className="hint small">Напоминать о просрочке</p>
+          <div className="filters" style={{ padding: 0 }}>
             {(Object.keys(FREQUENCY_LABEL) as Settings["overdue_frequency"][]).map((freq) => (
               <button
                 key={freq}
-                className={settings.overdue_frequency === freq ? "chip active" : "chip"}
+                className={settings.overdue_frequency === freq ? "filter active" : "filter"}
                 onClick={() => save({ overdue_frequency: freq })}
               >
                 {FREQUENCY_LABEL[freq]}
               </button>
             ))}
           </div>
-
-          <p className="hint">
-            Если контрагент не отвечает на отметку об оплате{" "}
-            {settings.payment_auto_confirm_days} дней, платёж засчитывается автоматически.
-          </p>
-        </section>
+        </Group>
       )}
 
-      <section className="card">
-        <h2>О приложении</h2>
-        <p className="hint">
-          Мы не собираем телефон, ФИО и другие персональные данные — только имя и
-          идентификатор из Telegram. Проценты и пени за просрочку не начисляются.
-          Записи видны только вам и вашему контрагенту.
-        </p>
-        <button className="secondary" onClick={() => tg?.close()}>Закрыть приложение</button>
-      </section>
+      <Group
+        title="О приложении"
+        footer="Мы не собираем телефон, ФИО и другие персональные данные — только имя и идентификатор из Telegram. Проценты и пени за просрочку не начисляются."
+      >
+        <button className="plain" onClick={() => tg?.close()}>Закрыть приложение</button>
+      </Group>
     </div>
   );
 }

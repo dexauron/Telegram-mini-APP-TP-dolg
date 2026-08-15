@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { calendarMonth, listDeals, type CalendarMonth, type Deal } from "../api/deals";
 import type { Profile } from "../api/client";
 import { formatMoney, formatDate, monthTitle, addMonths, todayMsk, WEEKDAY_SHORT } from "../lib/format";
-import { Loader } from "../components/Loader";
+import { Loader, Group } from "../components/Loader";
 import { StatusBadge } from "../components/StatusBadge";
 
 export function CalendarScreen({
@@ -60,9 +60,9 @@ export function CalendarScreen({
   return (
     <div className="screen">
       <header className="header calendar-header">
-        <button className="link" onClick={() => setMonth(addMonths(month, -1))}>‹</button>
+        <button onClick={() => setMonth(addMonths(month, -1))} aria-label="Предыдущий месяц">‹</button>
         <h1>{monthTitle(month)}</h1>
-        <button className="link" onClick={() => setMonth(addMonths(month, 1))}>›</button>
+        <button onClick={() => setMonth(addMonths(month, 1))} aria-label="Следующий месяц">›</button>
       </header>
 
       {!data ? <Loader /> : (
@@ -83,50 +83,49 @@ export function CalendarScreen({
                   ].filter(Boolean).join(" ")}
                   onClick={() => setSelected(selected === date ? null : date)}
                 >
-                  <span className="day-number">{Number(date.slice(-2))}</span>
-                  {info && (
+                  <span>{Number(date.slice(-2))}</span>
+                  {info ? (
                     <span
-                      className="day-dot"
+                      className="day-mark"
                       style={{
                         background: info.has_overdue ? "#ff9500"
                           : info.all_paid ? "#30d158"
                           : info.i_owe_minor > 0 ? "#ff3b30" : "#34c759",
                       }}
                     />
-                  )}
+                  ) : <span className="day-mark empty" />}
                 </button>
               );
             })}
           </div>
 
           {selected && (
-            <section className="card">
-              <h2>{formatDate(selected, today)}</h2>
+            <Group title={formatDate(selected, today)}>
               {byDate[selected] ? (
                 <>
                   {byDate[selected].owed_to_me_minor > 0 && (
-                    <div className="kv">
-                      <span className="kv-label">Мне должны</span>
-                      <span className="kv-value positive">
+                    <div className="cell">
+                      <span className="cell-title">Мне должны</span>
+                      <span className="cell-value positive">
                         {formatMoney(byDate[selected].owed_to_me_minor)}
                       </span>
                     </div>
                   )}
                   {byDate[selected].i_owe_minor > 0 && (
-                    <div className="kv">
-                      <span className="kv-label">К выплате</span>
-                      <span className="kv-value negative">
+                    <div className="cell">
+                      <span className="cell-title">К выплате</span>
+                      <span className="cell-value negative">
                         {formatMoney(byDate[selected].i_owe_minor)}
                       </span>
                     </div>
                   )}
                   {dayDeals === null ? <Loader text="…" /> : (
-                    <ul className="plain">
+                    <ul className="list">
                       {dayDeals.map((deal) => (
                         <li key={deal.id}>
-                          <button className="row compact" onClick={() => onOpen(deal.id)}>
-                            <span>{deal.description || "Без описания"}</span>
-                            <span className="row-right">
+                          <button className="cell" onClick={() => onOpen(deal.id)}>
+                            <span className="cell-title">{deal.description || "Без описания"}</span>
+                            <span className="cell-right">
                               <StatusBadge status={deal.status} isOverdue={deal.is_overdue} />
                               <span className={
                                 deal.debtor_profile_id === profile.id
@@ -142,21 +141,21 @@ export function CalendarScreen({
                   )}
                 </>
               ) : (
-                <p className="hint">На этот день записей нет.</p>
+                <p className="hint" style={{ padding: "11px 16px" }}>На этот день записей нет.</p>
               )}
-            </section>
+            </Group>
           )}
 
-          <div className="totals sticky">
-            <div className="total">
-              <span className="total-label">Мне должны за месяц</span>
-              <span className="total-value positive">
+          <div className="summary" style={{ marginTop: 18 }}>
+            <div className="summary-item">
+              <span className="summary-label">Мне должны за месяц</span>
+              <span className="summary-value positive">
                 {formatMoney(data.total_owed_to_me_minor)}
               </span>
             </div>
-            <div className="total">
-              <span className="total-label">На выплату</span>
-              <span className="total-value negative">
+            <div className="summary-item">
+              <span className="summary-label">На выплату</span>
+              <span className="summary-value negative">
                 {formatMoney(data.total_i_owe_minor)}
               </span>
             </div>

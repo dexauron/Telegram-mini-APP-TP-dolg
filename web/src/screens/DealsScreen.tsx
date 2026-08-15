@@ -48,8 +48,7 @@ export function DealsScreen({
     return () => { cancelled = true; };
   }, [profile.id, filter]);
 
-  // FR-093: поиск по сумме, описанию и контрагенту. По загруженной странице —
-  // серверный поиск добавим, когда у людей появятся сотни записей.
+  // FR-093: поиск по сумме, описанию и контрагенту.
   const visible = useMemo(() => {
     if (!deals) return null;
     const q = search.trim().toLowerCase();
@@ -82,32 +81,38 @@ export function DealsScreen({
   return (
     <div className="screen">
       <header className="header">
-        <h1>Записи</h1>
+        <div className="header-row">
+          <h1>Записи</h1>
+          <button className="header-action" onClick={onCreate}>Новая</button>
+        </div>
+      </header>
+
+      <div className="search-wrap">
         <input
           className="search"
           type="search"
-          placeholder="Поиск по сумме, описанию, контрагенту"
+          placeholder="Поиск"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-      </header>
+      </div>
 
-      <div className="totals">
-        <div className="total">
-          <span className="total-label">Мне должны</span>
-          <span className="total-value positive">{formatMoney(totals.owed)}</span>
+      <div className="summary" style={{ marginTop: 14 }}>
+        <div className="summary-item">
+          <span className="summary-label">Мне должны</span>
+          <span className="summary-value positive">{formatMoney(totals.owed)}</span>
         </div>
-        <div className="total">
-          <span className="total-label">Я должен</span>
-          <span className="total-value negative">{formatMoney(totals.owe)}</span>
+        <div className="summary-item">
+          <span className="summary-label">Я должен</span>
+          <span className="summary-value negative">{formatMoney(totals.owe)}</span>
         </div>
       </div>
 
-      <div className="chips">
+      <div className="filters">
         {FILTERS.map((f) => (
           <button
             key={f.id}
-            className={filter === f.id ? "chip active" : "chip"}
+            className={filter === f.id ? "filter active" : "filter"}
             onClick={() => setFilter(f.id)}
           >
             {f.label}
@@ -120,49 +125,56 @@ export function DealsScreen({
       ) : visible.length === 0 ? (
         <Empty text={search ? "Ничего не найдено" : "Пока нет записей"} />
       ) : (
-        <ul className="list">
-          {visible.map((deal) => {
-            const counterpartyId =
-              deal.initiator_profile_id === profile.id
-                ? deal.partner_profile_id
-                : deal.initiator_profile_id;
-            const iOwe = deal.debtor_profile_id === profile.id;
+        <section className="group">
+          <div className="card">
+            <ul className="list">
+              {visible.map((deal) => {
+                const counterpartyId =
+                  deal.initiator_profile_id === profile.id
+                    ? deal.partner_profile_id
+                    : deal.initiator_profile_id;
+                const iOwe = deal.debtor_profile_id === profile.id;
 
-            return (
-              <li key={deal.id}>
-                <button className="row" onClick={() => onOpen(deal.id)}>
-                  <div className="row-main">
-                    <span className="row-title">
-                      {counterpartyId ? names[counterpartyId] ?? "Контрагент" : "Ждёт контрагента"}
-                    </span>
-                    <span className="row-subtitle">
-                      {formatDate(deal.due_date, today)}
-                      {deal.description ? ` · ${deal.description}` : ""}
-                    </span>
-                    <StatusBadge status={deal.status} isOverdue={deal.is_overdue} />
-                    {deal.is_overdue && (
-                      <span className="row-warning">
-                        просрочка {deal.days_past_due}{" "}
-                        {plural(deal.days_past_due, ["день", "дня", "дней"])}
+                return (
+                  <li key={deal.id}>
+                    <button className="cell" onClick={() => onOpen(deal.id)}>
+                      <span className="cell-main">
+                        <span className="cell-title strong">
+                          {counterpartyId ? names[counterpartyId] ?? "Контрагент" : "Ждёт контрагента"}
+                        </span>
+                        <span className="cell-sub">
+                          {formatDate(deal.due_date, today)}
+                          {deal.description ? ` · ${deal.description}` : ""}
+                        </span>
+                        <span className="cell-sub" style={{ marginTop: 4 }}>
+                          <StatusBadge status={deal.status} isOverdue={deal.is_overdue} />
+                          {deal.is_overdue && (
+                            <span className="warning" style={{ marginLeft: 8 }}>
+                              {deal.days_past_due}{" "}
+                              {plural(deal.days_past_due, ["день", "дня", "дней"])} просрочки
+                            </span>
+                          )}
+                        </span>
                       </span>
-                    )}
-                  </div>
-                  <div className="row-amount">
-                    <span className={iOwe ? "amount negative" : "amount positive"}>
-                      {formatMoney(deal.remaining_minor)}
-                    </span>
-                    {deal.is_partially_paid && (
-                      <span className="row-hint">из {formatMoney(deal.amount_minor)}</span>
-                    )}
-                  </div>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+                      <span className="cell-right">
+                        <span className="cell-main" style={{ alignItems: "flex-end" }}>
+                          <span className={iOwe ? "amount negative" : "amount positive"}>
+                            {formatMoney(deal.remaining_minor)}
+                          </span>
+                          {deal.is_partially_paid && (
+                            <span className="cell-sub">из {formatMoney(deal.amount_minor)}</span>
+                          )}
+                        </span>
+                        <span className="chevron">›</span>
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </section>
       )}
-
-      <button className="fab" onClick={onCreate} aria-label="Новая запись">+</button>
     </div>
   );
 }

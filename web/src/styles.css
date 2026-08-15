@@ -1,7 +1,10 @@
 /*
- * NFR-018…NFR-025: чистый минималистичный интерфейс в духе iOS, системные
- * шрифты, крупные области нажатия, цвета берутся из темы Telegram, поэтому
- * приложение автоматически совпадает со светлым и тёмным оформлением клиента.
+ * NFR-018…NFR-025 с уточнением Р-13: нативный вид iOS без иконок.
+ *
+ * Основа — сгруппированные списки Settings: серый фон, белые блоки со скруглением,
+ * волосяные разделители между строками, крупный заголовок, подписи мелким серым.
+ * Цвета берутся из темы Telegram, поэтому светлое и тёмное оформление совпадают
+ * с клиентом. Роль иконок выполняют типографика, отступы и цвет.
  */
 
 :root {
@@ -13,208 +16,318 @@
   --accent-text: #ffffff;
   --danger: #ff3b30;
   --positive: #34c759;
-  --radius: 14px;
-  --gap: 12px;
+  --warning: #ff9500;
+
+  --separator: rgba(60, 60, 67, 0.29);
+  --fill: rgba(120, 120, 128, 0.12);
+  --fill-strong: rgba(120, 120, 128, 0.2);
+
+  --radius: 10px;
+  --inset: 16px;
+}
+
+:root[data-scheme="dark"] {
+  --separator: rgba(84, 84, 88, 0.6);
+  --fill: rgba(120, 120, 128, 0.24);
+  --fill-strong: rgba(120, 120, 128, 0.32);
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html { -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-  font-size: 16px;
-  line-height: 1.4;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue",
+    "Segoe UI", Roboto, sans-serif;
+  font-size: 17px;
+  line-height: 1.29;
+  letter-spacing: -0.01em;
 }
 
-button { font: inherit; color: inherit; cursor: pointer; border: none; background: none; }
+button { font: inherit; color: inherit; cursor: pointer; border: none; background: none; padding: 0; }
 input { font: inherit; }
 
-.app { padding-bottom: 76px; }
+.app { padding-bottom: calc(52px + env(safe-area-inset-bottom)); }
 
-.screen { padding: var(--gap); display: flex; flex-direction: column; gap: var(--gap); }
-.screen.center { min-height: 100vh; justify-content: center; }
+.screen { padding: 0 0 24px; display: flex; flex-direction: column; }
+.screen.center { min-height: 100vh; justify-content: center; padding: 0 var(--inset); }
 
-.header h1 { margin: 4px 0; font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+/* --- Заголовок в стиле Large Title ---------------------------------------- */
+
+.header { padding: 8px var(--inset) 0; }
+.header h1 {
+  margin: 4px 0 8px;
+  font-size: 34px;
+  line-height: 1.12;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.header-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.header-action { color: var(--accent); font-size: 17px; padding: 8px 0 12px; }
+.nav-back { color: var(--accent); font-size: 17px; padding: 10px 0 2px; display: block; }
+
 .calendar-header { display: flex; align-items: center; justify-content: space-between; }
-.calendar-header h1 { font-size: 22px; }
+.calendar-header h1 { font-size: 24px; margin: 8px 0; }
+.calendar-header button { color: var(--accent); font-size: 22px; padding: 8px 12px; }
+
+/* --- Сгруппированные блоки ------------------------------------------------ */
+
+.group { margin: 18px 0 0; }
+.group-title {
+  margin: 0 0 7px;
+  padding: 0 var(--inset);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--hint);
+}
+.group-footer {
+  margin: 7px 0 0;
+  padding: 0 var(--inset);
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--hint);
+}
 
 .card {
   background: var(--card);
   border-radius: var(--radius);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  margin: 0 var(--inset);
+  overflow: hidden;
 }
-.card h2 { margin: 0; font-size: 17px; font-weight: 600; }
-.card.proposal { border: 1px solid #ffcc00; }
-.card.tos { gap: 14px; }
-.card.tos h1 { margin: 0; font-size: 26px; }
+.card.padded { padding: 14px var(--inset); display: flex; flex-direction: column; gap: 10px; }
+.card.padded h2 { margin: 0; font-size: 17px; font-weight: 600; }
+.card.tos { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.card.tos h1 { margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
 
-.hint { color: var(--hint); font-size: 14px; margin: 0; }
-.link { color: var(--accent); padding: 4px 0; align-self: flex-start; }
+.hint { color: var(--hint); font-size: 15px; margin: 0; line-height: 1.35; }
+.hint.small { font-size: 13px; }
 
-.search {
+/* Строка списка с волосяным разделителем, как в родных таблицах iOS. */
+.cell {
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: none;
-  background: var(--card);
-  color: var(--text);
-}
-
-.totals { display: flex; gap: var(--gap); }
-.totals.sticky { position: sticky; bottom: 76px; }
-.total {
-  flex: 1;
-  background: var(--card);
-  border-radius: var(--radius);
-  padding: 12px;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px var(--inset);
+  text-align: left;
+  background: transparent;
+  position: relative;
 }
-.total-label { font-size: 13px; color: var(--hint); }
-.total-value { font-size: 19px; font-weight: 600; }
+.cell + .cell::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: var(--inset);
+  right: 0;
+  height: 0.5px;
+  background: var(--separator);
+}
+.cell:active { background: var(--fill); }
+.cell-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cell-title { font-size: 17px; font-weight: 400; }
+.cell-title.strong { font-weight: 600; }
+.cell-sub { font-size: 13px; color: var(--hint); }
+.cell-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.cell-value { color: var(--hint); font-size: 17px; }
+.chevron { color: var(--separator); font-size: 17px; }
+
+.amount { font-size: 17px; font-weight: 600; white-space: nowrap; }
 .positive { color: var(--positive); }
 .negative { color: var(--danger); }
 .danger { color: var(--danger); }
+.warning { color: var(--warning); }
 
-.chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; }
-.chip {
-  white-space: nowrap;
-  padding: 7px 14px;
-  border-radius: 999px;
-  background: var(--card);
-  color: var(--text);
-  font-size: 14px;
-}
-.chip.active { background: var(--accent); color: var(--accent-text); }
+/* --- Итоги ---------------------------------------------------------------- */
 
-.list, .plain, .timeline { list-style: none; margin: 0; padding: 0; }
-.list { display: flex; flex-direction: column; gap: 8px; }
+.summary { display: flex; margin: 0 var(--inset); background: var(--card); border-radius: var(--radius); }
+.summary-item { flex: 1; padding: 12px 14px; display: flex; flex-direction: column; gap: 3px; }
+.summary-item + .summary-item { border-left: 0.5px solid var(--separator); }
+.summary-label { font-size: 13px; color: var(--hint); }
+.summary-value { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
 
-.row {
-  width: 100%;
-  background: var(--card);
-  border-radius: var(--radius);
-  padding: 14px;
+/* --- Фильтры -------------------------------------------------------------- */
+
+.filters {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
-  text-align: left;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 14px var(--inset) 2px;
+  scrollbar-width: none;
 }
-.row.compact { padding: 10px 0; background: none; align-items: center; }
-.row.compact.active { color: var(--accent); }
-.row-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.row-title { font-weight: 600; }
-.row-subtitle, .row-hint { color: var(--hint); font-size: 13px; }
-.row-warning { color: #ff9500; font-size: 13px; }
-.row-amount { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-.row-right { display: flex; align-items: center; gap: 8px; }
-.amount { font-weight: 600; white-space: nowrap; }
+.filters::-webkit-scrollbar { display: none; }
+.filter {
+  white-space: nowrap;
+  padding: 6px 13px;
+  border-radius: 999px;
+  background: var(--fill);
+  font-size: 15px;
+}
+.filter.active { background: var(--accent); color: var(--accent-text); }
+
+/* Сегментированный переключатель, как UISegmentedControl. */
+.segmented {
+  display: flex;
+  background: var(--fill);
+  border-radius: 9px;
+  padding: 2px;
+}
+.segment {
+  flex: 1;
+  padding: 7px 10px;
+  border-radius: 7px;
+  font-size: 15px;
+  text-align: center;
+  color: var(--text);
+}
+.segment.active {
+  background: var(--card);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+/* --- Метка статуса -------------------------------------------------------- */
 
 .badge {
-  align-self: flex-start;
-  font-size: 12px;
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 500;
   padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid;
+  border-radius: 6px;
 }
 
-.kv { display: flex; justify-content: space-between; gap: 10px; }
-.kv-label { color: var(--hint); font-size: 14px; }
-.kv-value { text-align: right; }
+/* --- Кнопки --------------------------------------------------------------- */
 
-.deal-sub { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-
-.actions { display: flex; gap: 8px; }
+.actions { display: flex; gap: 10px; }
 .actions.column { flex-direction: column; }
 .actions button { flex: 1; }
 
-button.primary, button.secondary {
-  padding: 13px 16px;
+button.filled, button.tinted {
+  padding: 14px 16px;
   border-radius: 12px;
+  font-size: 17px;
   font-weight: 600;
   text-align: center;
 }
-button.primary { background: var(--accent); color: var(--accent-text); }
-button.secondary { background: rgba(120, 120, 128, 0.14); color: var(--text); }
-button.secondary.danger { color: var(--danger); }
-button:disabled { opacity: 0.5; }
+button.filled { background: var(--accent); color: var(--accent-text); }
+button.tinted { background: var(--fill); color: var(--accent); }
+button.tinted.destructive { color: var(--danger); }
+button.filled:active, button.tinted:active { opacity: 0.7; }
+button:disabled { opacity: 0.4; }
 
-.form { display: flex; flex-direction: column; gap: 8px; }
-.form label { font-size: 13px; color: var(--hint); }
-.form input {
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(120, 120, 128, 0.2);
-  background: var(--bg);
-  color: var(--text);
-  width: 100%;
+button.plain { color: var(--accent); font-size: 17px; padding: 12px var(--inset); text-align: left; width: 100%; }
+button.plain.destructive { color: var(--danger); }
+
+/* --- Формы ---------------------------------------------------------------- */
+
+.form { display: flex; flex-direction: column; }
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px var(--inset);
+  position: relative;
 }
-.amount-input { font-size: 24px; font-weight: 600; }
+.field + .field::before {
+  content: "";
+  position: absolute;
+  top: 0; left: var(--inset); right: 0;
+  height: 0.5px;
+  background: var(--separator);
+}
+.field label { font-size: 17px; flex-shrink: 0; }
+.field input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  text-align: right;
+  font-size: 17px;
+  padding: 0;
+  outline: none;
+}
+.field input[type="date"] { text-align: right; }
+.field.amount-field input { font-size: 22px; font-weight: 600; }
 
-.switch { display: flex; background: rgba(120, 120, 128, 0.14); border-radius: 10px; padding: 3px; }
-.switch-option { flex: 1; padding: 9px; border-radius: 8px; font-size: 15px; text-align: center; }
-.switch-option.active { background: var(--card); font-weight: 600; }
+.search-wrap { padding: 8px var(--inset) 0; }
+.search {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: none;
+  background: var(--fill);
+  color: var(--text);
+  font-size: 17px;
+  outline: none;
+}
+.search::placeholder { color: var(--hint); }
 
-.calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-.weekday { text-align: center; font-size: 12px; color: var(--hint); padding-bottom: 4px; }
+/* --- Календарь ------------------------------------------------------------ */
+
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px 0;
+  padding: 4px var(--inset) 12px;
+}
+.weekday { text-align: center; font-size: 13px; color: var(--hint); padding-bottom: 8px; }
 .day {
   aspect-ratio: 1;
-  border-radius: 10px;
-  background: var(--card);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 3px;
-}
-.day.today .day-number { color: var(--accent); font-weight: 700; }
-.day.selected { background: var(--accent); color: var(--accent-text); }
-.day-number { font-size: 15px; }
-.day-dot { width: 6px; height: 6px; border-radius: 50%; }
-
-.payment, .stat { display: flex; flex-direction: column; gap: 2px; padding: 8px 0; }
-.stat-name { font-weight: 600; }
-
-.timeline { display: flex; flex-direction: column; gap: 12px; }
-.timeline li { display: flex; gap: 10px; align-items: flex-start; }
-.timeline li > div { display: flex; flex-direction: column; }
-.timeline-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--accent); margin-top: 6px; flex-shrink: 0;
-}
-
-.fab {
-  position: fixed;
-  right: 16px;
-  bottom: 88px;
-  width: 56px;
-  height: 56px;
+  font-size: 17px;
   border-radius: 50%;
-  background: var(--accent);
-  color: var(--accent-text);
-  font-size: 30px;
-  line-height: 1;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  margin: 0 auto;
+  width: 38px;
 }
+.day.today { color: var(--accent); font-weight: 600; }
+.day.selected { background: var(--accent); color: var(--accent-text); font-weight: 600; }
+.day.selected .day-mark { background: var(--accent-text) !important; }
+.day-mark { width: 5px; height: 5px; border-radius: 50%; }
+.day-mark.empty { background: transparent; }
+
+/* --- История -------------------------------------------------------------- */
+
+.timeline { list-style: none; margin: 0; padding: 4px 0; }
+.timeline li { display: flex; gap: 12px; padding: 8px var(--inset); }
+.timeline-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--separator); margin-top: 7px; flex-shrink: 0;
+}
+.timeline-body { display: flex; flex-direction: column; gap: 1px; }
+.timeline-body span:last-child { font-size: 13px; color: var(--hint); }
+
+/* --- Нижняя навигация без иконок ------------------------------------------ */
 
 .tabbar {
   position: fixed;
   left: 0; right: 0; bottom: 0;
   display: flex;
-  background: var(--card);
-  border-top: 1px solid rgba(120, 120, 128, 0.16);
-  padding: 6px 0 max(6px, env(safe-area-inset-bottom));
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  backdrop-filter: blur(20px);
+  border-top: 0.5px solid var(--separator);
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 10;
 }
-.tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px; }
-.tab-icon { font-size: 20px; }
-.tab-label { font-size: 11px; color: var(--hint); }
-.tab.active .tab-label { color: var(--accent); }
+.tab {
+  flex: 1;
+  padding: 15px 4px;
+  font-size: 15px;
+  color: var(--hint);
+  text-align: center;
+}
+.tab.active { color: var(--accent); font-weight: 600; }
 
-.loader, .empty { padding: 40px 16px; text-align: center; color: var(--hint); }
+.loader, .empty { padding: 48px var(--inset); text-align: center; color: var(--hint); font-size: 15px; }
+
+ul.list { list-style: none; margin: 0; padding: 0; }
