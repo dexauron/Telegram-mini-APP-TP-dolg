@@ -178,7 +178,7 @@ ok(csvLines[1].includes("10.08.2026"), "даты в привычном форм�
 ok(csvLines[1].includes("45000,00"), "суммы с запятой как разделителем");
 ok(csvLines[1].includes('""отборное""'), "кавычки в описании экранированы");
 ok(csv.includes("Итого мне должны"), "в таблице есть итоги");
-eq(reportFileName(report), "most-dolgov_2026-08-01_2026-08-31.csv", "имя файла с периодом");
+eq(reportFileName(report), "ugovor_2026-08-01_2026-08-31.csv", "имя файла с периодом");
 
 console.log(`\nОбщие модули: пройдено ${passed} из ${passed + failures.length}`);
 if (failures.length) {

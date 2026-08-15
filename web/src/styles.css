@@ -129,6 +129,7 @@ input { font: inherit; }
   background: var(--separator);
 }
 .cell:active { background: var(--fill); }
+a.cell { color: inherit; text-decoration: none; }
 .cell-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .cell-title { font-size: 17px; font-weight: 400; }
 .cell-title.strong { font-weight: 600; }

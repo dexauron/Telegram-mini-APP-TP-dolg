@@ -65,8 +65,13 @@ async function session(from: TgUser): Promise<Session> {
 // Тексты
 // ---------------------------------------------------------------------------
 
+const LEGAL_LINKS = MINI_APP_URL
+  ? `\n\n<a href="${MINI_APP_URL.replace(/\/$/, "")}/terms.html">Пользовательское соглашение</a> · ` +
+    `<a href="${MINI_APP_URL.replace(/\/$/, "")}/privacy.html">Политика конфиденциальности</a>`
+  : "";
+
 const HELP = [
-  "Я помогаю зафиксировать договорённость об оплате так, чтобы обе стороны видели одно и то же.",
+  "<b>Уговор</b> помогает зафиксировать договорённость об оплате так, чтобы обе стороны видели одно и то же.",
   "",
   "<b>Как записать долг</b>",
   "Напишите мне сумму, срок и за что — обычным текстом:",
@@ -79,7 +84,7 @@ const HELP = [
   "",
   "Запись становится действующей только после подтверждения второй стороной. " +
   "Изменить условия в одностороннем порядке нельзя.",
-].join("\n");
+].join("\n") + LEGAL_LINKS;
 
 function miniAppButton() {
   return MINI_APP_URL
@@ -504,7 +509,7 @@ Deno.serve(async (req) => {
       const start = text.match(/^\/start(?:\s+(\S+))?/);
       if (start) {
         await handleStart(from, chat.id, start[1] ?? "");
-      } else if (text.startsWith("/help")) {
+      } else if (text.startsWith("/help") || text.startsWith("/terms")) {
         await bot("sendMessage", {
           chat_id: chat.id, text: HELP, parse_mode: "HTML", reply_markup: miniAppButton(),
         });

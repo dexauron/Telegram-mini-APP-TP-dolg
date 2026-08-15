@@ -151,6 +151,19 @@ await page.waitForSelector("text=История", { timeout: 5000 });
 console.log("OK: карточка сделки отрисована");
 await page.screenshot({ path: `${OUT}/04-kartochka.png` });
 
+// Правовые страницы раздаются тем же хостингом (NFR-033).
+await page.goto("http://localhost:4173/terms.html", { waitUntil: "domcontentloaded" });
+const termsText = await page.locator("main").innerText();
+console.log(termsText.includes("Пользовательское соглашение")
+  ? "OK: оферта открывается по прямой ссылке"
+  : "ОШИБКА: оферта не открылась");
+await page.screenshot({ path: `${OUT}/05-oferta-stranica.png`, fullPage: false });
+
+const placeholders = [...termsText.matchAll(/\[[А-ЯA-Z_]+\]/g)].map((m) => m[0]);
+if (placeholders.length) {
+  console.log(`НАПОМИНАНИЕ: в оферте осталось заполнить ${[...new Set(placeholders)].join(", ")}`);
+}
+
 console.log(crashes.length ? "ОШИБКИ JS:\n" + crashes.join("\n") : "OK: исключений JavaScript нет");
 await browser.close();
 server.close();

@@ -84,7 +84,7 @@ export function reportAsText(report: Report, today: string): string {
     }
   }
 
-  lines.push("", "Отчёт сформирован приложением «Мост долгов».");
+  lines.push("", "Отчёт сформирован приложением «Уговор».");
   return lines.join("\n");
 }
 
@@ -126,5 +126,5 @@ export function reportAsCsv(report: Report): string {
 }
 
 export function reportFileName(report: Report): string {
-  return `most-dolgov_${report.period.from}_${report.period.to}.csv`;
+  return `ugovor_${report.period.from}_${report.period.to}.csv`;
 }

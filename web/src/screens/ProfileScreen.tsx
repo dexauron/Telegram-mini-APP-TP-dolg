@@ -175,6 +175,14 @@ export function ProfileScreen({
         title="О приложении"
         footer="Мы не собираем телефон, ФИО и другие персональные данные — только имя и идентификатор из Telegram. Проценты и пени за просрочку не начисляются."
       >
+        <a className="cell" href="/terms.html" target="_blank" rel="noreferrer">
+          <span className="cell-title">Пользовательское соглашение</span>
+          <span className="cell-right"><span className="chevron">›</span></span>
+        </a>
+        <a className="cell" href="/privacy.html" target="_blank" rel="noreferrer">
+          <span className="cell-title">Политика конфиденциальности</span>
+          <span className="cell-right"><span className="chevron">›</span></span>
+        </a>
         <button className="plain" onClick={() => tg?.close()}>Закрыть приложение</button>
       </Group>
     </div>
