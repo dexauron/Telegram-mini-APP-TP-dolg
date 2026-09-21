@@ -1,0 +1,1184 @@
+<title>3D-тур скорой Грозного</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F2F5F6; --surface:#FFFFFF; --surface-2:#E7EEF0; --surface-3:#DAE5E9;
+  --ink:#0F1A1D; --ink-2:#4B5C62; --ink-3:#71858B;
+  --line:#C6D5D9; --line-soft:#DCE6E9;
+  --accent:#C8102E; --accent-soft:#FBE9EB;
+  --signal:#0B7A5C; --signal-soft:#E2F3ED;
+  --warn:#9A6100; --warn-soft:#FBF0DC;
+  --shadow:0 1px 2px rgba(15,26,29,.06),0 8px 24px rgba(15,26,29,.06);
+  --display:'Oswald','Helvetica Neue',Arial,sans-serif;
+  --body:'Golos Text','Segoe UI',system-ui,sans-serif;
+  --mono:'JetBrains Mono','SF Mono',Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B1113; --surface:#121B1E; --surface-2:#182429; --surface-3:#1F2E34;
+    --ink:#E9F1F3; --ink-2:#9BAFB6; --ink-3:#7C9198;
+    --line:#26363C; --line-soft:#1D2A2F;
+    --accent:#FF5D63; --accent-soft:#2A1416;
+    --signal:#33D39D; --signal-soft:#0E2A23;
+    --warn:#E8A33D; --warn-soft:#2B2113;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B1113; --surface:#121B1E; --surface-2:#182429; --surface-3:#1F2E34;
+  --ink:#E9F1F3; --ink-2:#9BAFB6; --ink-3:#7C9198;
+  --line:#26363C; --line-soft:#1D2A2F;
+  --accent:#FF5D63; --accent-soft:#2A1416;
+  --signal:#33D39D; --signal-soft:#0E2A23;
+  --warn:#E8A33D; --warn-soft:#2B2113;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--display);font-weight:600;letter-spacing:.005em;text-wrap:balance;margin:0;line-height:1.14}
+p{margin:0}
+a{color:inherit}
+code{font-family:var(--mono);font-size:.9em;background:var(--surface-2);padding:1px 5px;border-radius:3px}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:20px}
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+
+.rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line-soft)}
+.rail-in{max-width:1120px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.mark{display:flex;align-items:center;gap:9px;font-family:var(--display);font-size:15px;letter-spacing:.02em;text-transform:uppercase}
+.mark i{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px var(--accent-soft);display:block;flex:none}
+.rail nav{margin-left:auto;display:flex;gap:2px;flex-wrap:wrap}
+.rail nav a{font-size:13px;color:var(--ink-2);text-decoration:none;padding:5px 9px;border-radius:6px}
+.rail nav a:hover{background:var(--surface-2);color:var(--ink)}
+.rail nav a:focus-visible,.btn:focus-visible,.chip:focus-visible,.hs:focus-visible,.scene:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.hero{padding-block:34px 24px}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:36px;align-items:start}
+h1{font-size:clamp(29px,4.4vw,48px);text-transform:uppercase;letter-spacing:.01em}
+h1 .thin{display:block;font-weight:500;color:var(--ink-2);font-size:.42em;letter-spacing:.05em;margin-top:12px;text-transform:none;font-family:var(--body);line-height:1.45}
+.lede{margin-top:18px;font-size:15.5px;color:var(--ink-2);max-width:62ch;display:grid;gap:11px}
+.lede b{color:var(--ink);font-weight:600}
+.facts{margin-top:20px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);border-radius:4px;overflow:hidden}
+.fact{background:var(--surface);padding:12px 13px}
+.fact b{display:block;font-family:var(--mono);font-size:20px;font-weight:500;font-variant-numeric:tabular-nums}
+.fact span{display:block;font-size:12px;color:var(--ink-3);margin-top:3px;line-height:1.35}
+.goal{margin-top:18px;padding:15px 17px;background:var(--surface);border:1px solid var(--line-soft);border-left:3px solid var(--accent);border-radius:4px;box-shadow:var(--shadow)}
+.goal .eyebrow{color:var(--accent)}
+.goal p{margin-top:7px;font-size:14.5px;color:var(--ink-2)}
+
+/* ---------- viewer ---------- */
+.tour{padding-block:8px 40px}
+.scenes{display:flex;gap:7px;overflow-x:auto;padding-bottom:9px;margin-bottom:10px;scrollbar-width:thin}
+.scene{flex:none;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:5px;padding:9px 13px;cursor:pointer;color:var(--ink-2);min-width:172px}
+.scene b{display:block;font-family:var(--display);font-size:13.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink)}
+.scene span{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.scene[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.scene[aria-pressed="true"] b{color:var(--accent)}
+.viewer{border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--surface);box-shadow:var(--shadow)}
+.viewer-head{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line-soft);background:var(--surface-2);flex-wrap:wrap}
+.live{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--signal)}
+.live i{width:6px;height:6px;border-radius:50%;background:var(--signal);display:block}
+@media (prefers-reduced-motion:no-preference){.live i{animation:pulse 2.4s ease-in-out infinite}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.stage{position:relative;aspect-ratio:21/9;max-width:100%;background:var(--surface-3);touch-action:none;cursor:grab}
+.stage.dragging{cursor:grabbing}
+.stage canvas{display:block;width:100%;height:100%}
+#spots{position:absolute;inset:0;pointer-events:none}
+.hs{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;border:0;background:none;padding:0;cursor:pointer;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.hs .dot{width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.35),0 2px 6px rgba(0,0,0,.45);flex:none}
+.hs .tag{font-family:var(--mono);font-size:10.5px;color:#fff;background:rgba(9,17,20,.84);padding:3px 7px;border-radius:3px;opacity:0;transform:translateX(-4px);transition:opacity .16s,transform .16s;max-width:240px;overflow:hidden;text-overflow:ellipsis}
+.hs:hover .tag,.hs:focus-visible .tag,.hs.on .tag{opacity:1;transform:none}
+.hs.on .dot{box-shadow:0 0 0 3px rgba(255,255,255,.6),0 0 0 1px rgba(0,0,0,.45)}
+.viewer-foot{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line-soft);flex-wrap:wrap;align-items:center;background:var(--surface-2)}
+.chip{font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;padding:5px 9px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip .sw{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:1px}
+.btn{font-family:var(--body);font-size:13px;font-weight:500;padding:6px 12px;border-radius:5px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn:hover{background:var(--surface-3)}
+.spacer{margin-left:auto}
+.readout{font-family:var(--mono);font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.detail{border:1px solid var(--line-soft);border-top:0;border-radius:0 0 6px 6px;background:var(--surface);padding:16px 18px}
+.detail h3{font-size:20px;margin-top:6px}
+.detail .sum{margin-top:8px;color:var(--ink-2);font-size:14.5px;max-width:74ch}
+.specs{margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);border-radius:4px;overflow:hidden}
+.specs div{background:var(--surface);display:flex;justify-content:space-between;gap:14px;padding:8px 11px;font-size:13px}
+.specs dt{color:var(--ink-3)}
+.specs dd{margin:0;font-family:var(--mono);font-size:12.5px;text-align:right}
+.tele-note{margin-top:12px;padding:10px 12px;background:var(--signal-soft);border-radius:4px;font-size:13px;color:var(--ink-2);max-width:88ch}
+.tele-note b{color:var(--signal);font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:3px}
+
+.k{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:3px;white-space:nowrap;vertical-align:2px}
+.k-fact{background:var(--surface-3);color:var(--ink-2)}
+.k-req{background:var(--signal-soft);color:var(--signal)}
+.k-est{background:var(--warn-soft);color:var(--warn)}
+
+section{padding-block:46px;border-top:1px solid var(--line-soft)}
+.s-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:24px}
+.s-head h2{font-size:clamp(22px,3vw,31px);text-transform:uppercase}
+.s-head p{color:var(--ink-2);font-size:14.5px;max-width:66ch;flex-basis:100%}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(244px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line-soft);border-radius:5px;padding:15px 16px;box-shadow:var(--shadow)}
+.card h4{font-size:15px;text-transform:uppercase;letter-spacing:.03em}
+.card p{margin-top:7px;font-size:13.5px;color:var(--ink-2)}
+.card .num{font-family:var(--mono);font-size:11px;color:var(--accent);display:block;margin-bottom:6px;letter-spacing:.06em;text-transform:uppercase}
+
+.classes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.cls{background:var(--surface);border:1px solid var(--line-soft);border-radius:5px;overflow:hidden;box-shadow:var(--shadow)}
+.cls header{padding:14px 16px;border-bottom:1px solid var(--line-soft);display:flex;align-items:baseline;gap:10px;background:var(--surface-2)}
+.cls header b{font-family:var(--display);font-size:32px;line-height:1;color:var(--accent)}
+.cls header span{font-family:var(--display);font-size:14px;text-transform:uppercase;letter-spacing:.06em}
+.cls ul{margin:0;padding:14px 16px 16px 32px;display:grid;gap:7px;font-size:14px;color:var(--ink-2)}
+
+.tasks{display:grid;border:1px solid var(--line-soft);border-radius:5px;overflow:hidden;background:var(--surface)}
+.task{display:grid;grid-template-columns:44px minmax(0,1fr);gap:14px;padding:13px 16px;border-bottom:1px solid var(--line-soft);align-items:baseline}
+.task:last-child{border-bottom:0}
+.task b{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:500}
+.task span{font-size:14.5px}
+
+.phase{margin-bottom:24px}
+.phase-h{display:flex;align-items:center;gap:11px;margin-bottom:10px}
+.phase-h b{font-family:var(--display);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+.phase-h .bar{height:2px;flex:1;background:var(--line)}
+.phase-h .rng{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.steps{display:grid;gap:8px}
+.step{display:grid;grid-template-columns:36px minmax(0,1fr);gap:12px;align-items:baseline;padding:10px 13px;background:var(--surface);border:1px solid var(--line-soft);border-left:2px solid var(--accent);border-radius:4px;font-size:14px}
+.step b{font-family:var(--mono);font-size:12px;color:var(--ink-3);font-weight:500}
+
+.flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.node{background:var(--surface);border:1px solid var(--line-soft);border-radius:5px;padding:14px;position:relative;box-shadow:var(--shadow)}
+.node h4{font-size:14px;text-transform:uppercase;letter-spacing:.03em}
+.node .eyebrow{margin-bottom:6px;display:block}
+.node ul{margin:9px 0 0;padding-left:16px;font-size:13px;color:var(--ink-2);display:grid;gap:4px}
+.node::after{content:"";position:absolute;right:-8px;top:50%;width:10px;height:10px;border-top:2px solid var(--accent);border-right:2px solid var(--accent);transform:translateY(-50%) rotate(45deg);z-index:2}
+.node:last-child::after{display:none}
+
+.geo{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);border-radius:5px;overflow:hidden}
+.geo div{background:var(--surface);padding:11px 13px}
+.geo b{display:block;font-family:var(--display);font-size:14px;text-transform:uppercase;letter-spacing:.04em}
+.geo span{display:block;font-size:12.5px;color:var(--ink-3);margin-top:3px}
+.geo div.hi{background:var(--accent-soft)}
+.geo div.hi b{color:var(--accent)}
+
+.tablewrap{overflow-x:auto;border:1px solid var(--line-soft);border-radius:5px}
+table{border-collapse:collapse;width:100%;min-width:600px;background:var(--surface);font-size:14px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+thead th{font-family:var(--display);font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-2);background:var(--surface-2)}
+tbody tr:last-child td{border-bottom:0}
+td.theirs{color:var(--ink-2)}
+th:first-child{width:22%}
+
+.note{background:var(--surface-2);border:1px solid var(--line-soft);border-radius:5px;padding:15px 17px;font-size:13.5px;color:var(--ink-2)}
+.note b{color:var(--ink);font-family:var(--display);font-size:13px;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:6px}
+.note a{color:var(--accent)}
+details.cfg{margin-top:14px;border:1px solid var(--line-soft);border-radius:5px;background:var(--surface);padding:12px 14px}
+details.cfg summary{cursor:pointer;font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2)}
+textarea{width:100%;margin-top:10px;min-height:190px;font-family:var(--mono);font-size:11.5px;line-height:1.5;padding:10px;border:1px solid var(--line);border-radius:4px;background:var(--bg);color:var(--ink);resize:vertical}
+footer{padding-block:28px 44px;border-top:1px solid var(--line-soft);color:var(--ink-3);font-size:12.5px;display:grid;gap:6px}
+
+@media (max-width:900px){
+  .hero-grid{grid-template-columns:1fr;gap:22px}
+  .flow{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .node:nth-child(2)::after{display:none}
+  .classes{grid-template-columns:1fr}
+  .stage{aspect-ratio:16/10}
+}
+@media (max-width:560px){
+  .facts{grid-template-columns:1fr}
+  .flow{grid-template-columns:1fr}
+  .node::after{right:50%;top:auto;bottom:-8px;transform:translateX(50%) rotate(135deg)}
+  .node:nth-child(2)::after{display:block}
+  .stage{aspect-ratio:1/1}
+  .hs .tag{display:none}
+}
+</style>
+
+<header class="rail">
+  <div class="rail-in">
+    <span class="mark"><i></i>Скорая Грозного · 3D-тур</span>
+    <nav>
+      <a href="#tour">Тур</a><a href="#classes">Классы B и C</a><a href="#geo">География</a>
+      <a href="#tasks">Задачи</a><a href="#stages">Этапы</a><a href="#tele">Контур</a><a href="#value">Эффекты</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap hero">
+  <div class="hero-grid">
+    <div>
+      <span class="eyebrow">Чеченская Республика · г. Грозный</span>
+      <h1>3D-тур по салонам скорой медицинской помощи
+        <span class="thin">Интерьер и экстерьер автомобилей классов B и C, оперативный центр и телемедицинский контур</span>
+      </h1>
+      <div class="lede">
+        <p>На этой странице вы погружаетесь в эргономичное пространство салонов автомобилей скорой медицинской помощи Грозного: поворачивайте, масштабируйте и перемещайте изображение, чтобы рассмотреть каждый угол салона и кузова.</p>
+        <p>Тур показывает машину так, будто вы стоите внутри неё. Компоновка, размещение укладок, рабочее место врача, погрузочная зона, а снаружи — цветографическая схема, светосигнальное оборудование и точки доступа к отсекам.</p>
+        <p><b>Для кого.</b> Для тех, кто изучает автомобиль класса B или C и культуру эргономики салона до того, как принимать решение: главные врачи, специалисты по закупкам, фельдшерские бригады, проектировщики.</p>
+      </div>
+      <div class="facts">
+        <div class="fact"><b>5</b><span>сцен тура: салоны, экстерьер, центр</span></div>
+        <div class="fact"><b>B / C</b><span>классы автомобилей СМП</span></div>
+        <div class="fact"><b>103</b><span>единый номер вызова</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="goal">
+        <span class="eyebrow">Цель проекта</span>
+        <p>Создание современного и эффективного автомобиля скорой медицинской помощи, способного предоставить медицинскую помощь и диагностику на месте с использованием телемедицинских технологий.</p>
+      </div>
+      <div class="note" style="margin-top:14px">
+        <b>Как пользоваться туром</b>
+        Тяните мышью или пальцем — обзор поворачивается. Колесо или щипок — приближение. Цветные точки открывают карточку узла: назначение, проектные параметры и роль в телемедицинском контуре. Кнопки подсистем внизу прячут лишние точки, а «Своя панорама» подставляет ваш снимок 360° прямо в браузере, ничего никуда не отправляя.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap tour" id="tour">
+  <div class="scenes" id="scenes" role="group" aria-label="Сцены тура"></div>
+  <div class="viewer">
+    <div class="viewer-head">
+      <span class="eyebrow" id="sceneName">—</span>
+      <span class="live"><i></i>интерактив</span>
+      <span class="readout spacer" id="readout">—</span>
+    </div>
+    <div class="stage" id="stage"><div id="spots"></div></div>
+    <div class="viewer-foot">
+      <span id="chips" style="display:flex;gap:8px;flex-wrap:wrap"></span>
+      <span class="spacer"></span>
+      <button class="btn" id="spin" type="button">Пауза</button>
+      <label class="btn" for="panofile">Своя панорама</label>
+      <input id="panofile" type="file" accept="image/*" hidden>
+    </div>
+  </div>
+  <div class="detail" id="detail"></div>
+</div>
+
+<div class="wrap">
+
+<section id="classes">
+  <div class="s-head">
+    <h2>Классы B и C</h2>
+    <p>Деление автомобилей скорой медицинской помощи на классы A, B и C закреплено ГОСТ Р 33665-2015 <span class="k k-fact">факт</span>. Ниже — назначение классов и то, что различие означает для компоновки салона. Конкретные требования к оснащению сверяются по действующей редакции стандарта и порядку оказания скорой помощи.</p>
+  </div>
+  <div class="classes">
+    <div class="cls">
+      <header><b>B</b><span>Автомобиль экстренной медицинской помощи</span></header>
+      <ul>
+        <li>Проведение лечебных мероприятий силами скорой медицинской помощи и транспортировка пациента</li>
+        <li>Компоновка рассчитана на работу бригады из двух человек с доступом к пациенту с головного конца и сбоку</li>
+        <li>Базовый мониторинг, кислород, дефибриллятор, укладки по профилю вызова</li>
+        <li>Основная рабочая единица городской сети — наибольшее число выездов приходится на этот класс</li>
+      </ul>
+    </div>
+    <div class="cls">
+      <header><b>C</b><span>Реанимобиль</span></header>
+      <ul>
+        <li>Интенсивная терапия и реанимация на месте и в движении</li>
+        <li>Увеличенный объём салона, место для работы двух-трёх специалистов одновременно</li>
+        <li>ИВЛ, расширенный мониторинг, инфузионная техника, экспресс-диагностика</li>
+        <li>Носитель телемедицинского контура в первую очередь: именно здесь дистанционная консультация меняет тактику</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="geo">
+  <div class="s-head">
+    <h2>География применения</h2>
+    <p>Республика делится на равнинную часть с плотной сетью подстанций и горные южные районы, где плечо доставки в стационар измеряется часами, а сотовое покрытие неустойчиво. Телемедицинский контур даёт наибольший эффект именно во второй группе — там консультация специалиста приходит раньше, чем автомобиль.</p>
+  </div>
+  <div class="geo">
+    <div><b>Грозный</b><span>Оперативный центр, короткое плечо доставки</span></div>
+    <div><b>Гудермес</b><span>Равнина, устойчивая связь</span></div>
+    <div><b>Урус-Мартан</b><span>Равнина, устойчивая связь</span></div>
+    <div><b>Шали</b><span>Равнина, устойчивая связь</span></div>
+    <div class="hi"><b>Веденский</b><span>Горный, длинное плечо</span></div>
+    <div class="hi"><b>Шатойский</b><span>Горный, длинное плечо</span></div>
+    <div class="hi"><b>Итум-Калинский</b><span>Высокогорье, связь неустойчива</span></div>
+    <div class="hi"><b>Шаройский</b><span>Высокогорье, связь неустойчива</span></div>
+    <div class="hi"><b>Ножай-Юртовский</b><span>Горный, длинное плечо</span></div>
+  </div>
+</section>
+
+<section id="tasks">
+  <div class="s-head">
+    <h2>Основные задачи</h2>
+    <p>Шесть задач проекта. Они же служат критериями приёмки результатов.</p>
+  </div>
+  <div class="tasks">
+    <div class="task"><b>01</b><span>Исследование существующих моделей автомобилей СМП и их возможностей.</span></div>
+    <div class="task"><b>02</b><span>Разработка концепции инновационного салона автомобиля СМП, включая определение требований к функциональности и оборудованию.</span></div>
+    <div class="task"><b>03</b><span>Проектирование и создание автономного лечебно-диагностического комплекса внутри автомобиля.</span></div>
+    <div class="task"><b>04</b><span>Интеграция телемедицинских технологий для дистанционного мониторинга и консультаций с врачами-специалистами.</span></div>
+    <div class="task"><b>05</b><span>Тестирование и оптимизация разработанной системы на практике.</span></div>
+    <div class="task"><b>06</b><span>Оценка эффективности и экономической целесообразности внедрения новой модели автомобиля СМП в медицинские учреждения.</span></div>
+  </div>
+</section>
+
+<section id="stages">
+  <div class="s-head">
+    <h2>Этапы реализации</h2>
+    <p>Тринадцать этапов сгруппированы в четыре фазы — группировка наша, формулировки и порядок исходные. Нумерация здесь несёт смысл: этапы идут последовательно, каждая фаза закрывается решением о переходе к следующей.</p>
+  </div>
+  <div class="phase">
+    <div class="phase-h"><b>Фаза I · Исследование и требования</b><span class="bar"></span><span class="rng">этапы 1–2</span></div>
+    <div class="steps">
+      <div class="step"><b>01</b><span>Проведение анализа рынка существующих автомобилей СМП и выявление возможностей для улучшения их функционала.</span></div>
+      <div class="step"><b>02</b><span>Сбор и анализ требований к новому автомобилю от медицинских специалистов и руководителей медицинских учреждений.</span></div>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-h"><b>Фаза II · Проектирование и прототип</b><span class="bar"></span><span class="rng">этапы 3–5</span></div>
+    <div class="steps">
+      <div class="step"><b>03</b><span>Разработка прототипа инновационного салона автомобиля СМП с использованием современных материалов и технологий.</span></div>
+      <div class="step"><b>04</b><span>Создание автономного лечебно-диагностического комплекса, включая выбор и интеграцию необходимого медицинского оборудования.</span></div>
+      <div class="step"><b>05</b><span>Разработка программного обеспечения для управления телемедицинскими технологиями и их интеграция в систему автомобиля СМП.</span></div>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-h"><b>Фаза III · Испытания и пилот</b><span class="bar"></span><span class="rng">этапы 6–8</span></div>
+    <div class="steps">
+      <div class="step"><b>06</b><span>Проведение тестов и оптимизация прототипа автомобиля СМП на основе полученных результатов и отзывов медицинских специалистов.</span></div>
+      <div class="step"><b>07</b><span>Организация пилотных проектов по внедрению разработанного автомобиля СМП в медицинских учреждениях с целью оценки его эффективности и выявления возможных проблем.</span></div>
+      <div class="step"><b>08</b><span>Анализ результатов пилотных проектов и внесение корректировок в конструкцию и функционал автомобиля.</span></div>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-h"><b>Фаза IV · Сертификация и масштабирование</b><span class="bar"></span><span class="rng">этапы 9–13</span></div>
+    <div class="steps">
+      <div class="step"><b>09</b><span>Подготовка документации и сертификации автомобиля для его допуска к использованию в медицинской практике.</span></div>
+      <div class="step"><b>10</b><span>Разработка плана масштабирования и продвижения новой модели автомобиля СМП на рынке медицинских услуг.</span></div>
+      <div class="step"><b>11</b><span>Реализация плана масштабирования и продвижения, включая заключение договоров с медицинскими учреждениями, организацию сервисной поддержки и обучение персонала.</span></div>
+      <div class="step"><b>12</b><span>Мониторинг и анализ результатов эксплуатации автомобиля СМП, сбор обратной связи от пользователей и внесение необходимых изменений в конструкцию и функционал автомобиля.</span></div>
+      <div class="step"><b>13</b><span>Развитие и совершенствование автомобиля СМП с целью постоянного улучшения его эффективности и удовлетворения потребностей медицинского сообщества.</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="tele">
+  <div class="s-head">
+    <h2>Телемедицинский контур</h2>
+    <p>Путь данных от пациента в салоне до профильного специалиста. Центральное звено — оперативный центр в Грозном: он принимает поток с бортов, поднимает карту вызова и соединяет бригаду с нужным специалистом. Числовые значения ниже — <span class="k k-req">проектное требование</span>, то есть то, что закладывается в ТЗ и проверяется на испытаниях, а не измеренный результат.</p>
+  </div>
+  <div class="flow">
+    <div class="node">
+      <span class="eyebrow">Узел 1</span>
+      <h4>Борт АСМП</h4>
+      <ul>
+        <li>Монитор, ИВЛ, дефибриллятор на единой шине данных</li>
+        <li>Бортовой сервер с буфером записи при разрыве связи</li>
+        <li>Две камеры: обзор салона и поле манипуляции</li>
+        <li>Гарнитура с шумоподавлением для голосовой связи</li>
+      </ul>
+    </div>
+    <div class="node">
+      <span class="eyebrow">Узел 2</span>
+      <h4>Канал связи</h4>
+      <ul>
+        <li>Агрегация LTE/5G нескольких операторов</li>
+        <li>Резервный спутниковый канал для горных районов</li>
+        <li>Приоритет трафика: витальные показатели выше видео</li>
+        <li>Шифрование канала, обезличивание на борту</li>
+      </ul>
+    </div>
+    <div class="node">
+      <span class="eyebrow">Узел 3 · Грозный</span>
+      <h4>Оперативный центр</h4>
+      <ul>
+        <li>Приём вызовов 103 и управление бригадами</li>
+        <li>Пульт дежурного врача-консультанта</li>
+        <li>Автоподъём карты вызова к потоку с борта</li>
+        <li>Маршрутизация к профильному специалисту</li>
+      </ul>
+    </div>
+    <div class="node">
+      <span class="eyebrow">Узел 4</span>
+      <h4>Стационар</h4>
+      <ul>
+        <li>Предуведомление приёмного отделения</li>
+        <li>Подготовка операционной или рентгенэндоваскулярной</li>
+        <li>Передача данных в медицинскую информационную систему</li>
+        <li>Обратная связь об исходе для анализа</li>
+      </ul>
+    </div>
+  </div>
+  <div class="cards" style="margin-top:14px">
+    <div class="card"><span class="num">Задержка витальных данных</span><h4>≤ 2 с</h4><p>От снятия показателя монитором до отображения на пульте консультанта. <span class="k k-req">требование</span></p></div>
+    <div class="card"><span class="num">Видеоканал</span><h4>720p · 25 к/с</h4><p>Минимум для оценки состояния пациента и контроля манипуляции. <span class="k k-req">требование</span></p></div>
+    <div class="card"><span class="num">Работа без связи</span><h4>Полный цикл</h4><p>Помощь продолжается автономно, данные догружаются при восстановлении канала. <span class="k k-req">требование</span></p></div>
+    <div class="card"><span class="num">Автономность питания</span><h4>Расчётная</h4><p>Определяется по суммарному потреблению узлов на этапе 04, проверяется на этапе 06. <span class="k k-est">допущение</span></p></div>
+  </div>
+</section>
+
+<section id="value">
+  <div class="s-head">
+    <h2>Преимущества решения</h2>
+    <p>Десять заявленных эффектов. Каждый подлежит проверке на этапах 06–08 и количественной оценке в задаче 06 — до этого они остаются проектными ожиданиями, а не результатами.</p>
+  </div>
+  <div class="cards">
+    <div class="card"><span class="num">Скорость</span><h4>Диагностика на месте</h4><p>Ускорение процесса диагностики и оказания первичной медицинской помощи на месте.</p></div>
+    <div class="card"><span class="num">Объём помощи</span><h4>Процедуры в салоне</h4><p>Проведение ряда лечебных процедур и медицинских манипуляций непосредственно в автомобиле.</p></div>
+    <div class="card"><span class="num">Связь</span><h4>Удалённый контроль</h4><p>Дистанционный мониторинг состояния пациента и консультации со специалистами.</p></div>
+    <div class="card"><span class="num">Оснащение</span><h4>Качество помощи</h4><p>Улучшение качества медицинской помощи благодаря современному оборудованию и технологиям.</p></div>
+    <div class="card"><span class="num">Автономность</span><h4>Экономия ресурсов</h4><p>Экономия времени и ресурсов медицинских учреждений за счёт автономного лечебно-диагностического комплекса.</p></div>
+    <div class="card"><span class="num">География</span><h4>Горные районы</h4><p>Применение там, где нет стационарных медицинских учреждений или они не обеспечены необходимым оборудованием.</p></div>
+    <div class="card"><span class="num">Безопасность</span><h4>Пациент и бригада</h4><p>Повышение безопасности пациентов и персонала за счёт современных систем мониторинга.</p></div>
+    <div class="card"><span class="num">Маршрутизация</span><h4>Разгрузка стационаров</h4><p>Снижение нагрузки на стационарные учреждения за счёт диагностики и помощи на месте.</p></div>
+    <div class="card"><span class="num">Мобильность</span><h4>Оперативность СМП</h4><p>Повышение мобильности и оперативности службы, а с ней — эффективности системы здравоохранения.</p></div>
+    <div class="card"><span class="num">Данные</span><h4>База для исследований</h4><p>Сбор и анализ большого объёма данных о состоянии пациентов и результатах лечения.</p></div>
+  </div>
+</section>
+
+<section id="howto">
+  <div class="s-head">
+    <h2>Как подставить свои панорамы</h2>
+    <p>Сейчас в туре показаны схемы компоновки, построенные кодом страницы. Они заменяются вашими панорамами грозненских машин — по одной на сцену, без переделки разметки.</p>
+  </div>
+  <div class="cards">
+    <div class="card"><span class="num">Шаг 1 · Съёмка</span><h4>Салон и кузов</h4><p>Панорамная камера со штатива: салон — от изголовья каталки, экстерьер — в трёх-четырёх метрах от машины. Равнопромежуточная проекция 2:1, например 8192×4096.</p></div>
+    <div class="card"><span class="num">Шаг 2 · Проверка</span><h4>Прямо в браузере</h4><p>Кнопка «Своя панорама» подставляет файл в выбранную сцену локально. Точки остаются на своих углах — сразу видно, что и куда сместилось.</p></div>
+    <div class="card"><span class="num">Шаг 3 · Фиксация</span><h4>В коде страницы</h4><p>В массиве <code>SCENES</code> задайте <code>url</code> для сцены и поправьте <code>lon</code> и <code>lat</code> у точек. Готовый JSON всех точек — ниже.</p></div>
+    <div class="card"><span class="num">Шаг 4 · Размещение</span><h4>Один файл</h4><p>Страница self-contained: единственная внешняя зависимость — движок three.js с CDN. Для закрытого контура положите его рядом с файлом и поправьте путь в теге <code>script</code>.</p></div>
+  </div>
+  <details class="cfg">
+    <summary>Конфигурация сцен и точек · JSON</summary>
+    <textarea id="cfgjson" readonly spellcheck="false"></textarea>
+  </details>
+</section>
+
+<section id="origin">
+  <div class="s-head">
+    <h2>Об исходном туре</h2>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Параметр</th><th>Исходный тур (skor2024)</th><th>Наш вариант</th></tr></thead>
+      <tbody>
+        <tr><td>Движок</td><td class="theirs">krpano 1.19 в сборке Kolor Panotour Pro 2.5.14; продукт снят с поддержки в 2018 г. <span class="k k-fact">факт</span></td><td>WebGL поверх three.js, без лицензируемого плеера</td></tr>
+        <tr><td>Запасной путь</td><td class="theirs">Flash-объект <code>.swf</code> для браузеров без WebGL <span class="k k-fact">факт</span></td><td>Только WebGL; без него — текстовая карта узлов с азимутами</td></tr>
+        <tr><td>Сцены</td><td class="theirs">3 панорамы, названия сцен — имена исходных файлов <span class="k k-fact">факт</span></td><td>5 сцен: салоны B и C, экстерьер, оперативный центр</td></tr>
+        <tr><td>Подписи оборудования</td><td class="theirs">Точки перехода есть, текст подсказок пуст <span class="k k-fact">факт</span></td><td>Узлы с назначением, проектными параметрами и ролью в контуре</td></tr>
+        <tr><td>Экстерьер</td><td class="theirs">Не представлен</td><td>Отдельная сцена: светографика, отсеки, точки доступа</td></tr>
+        <tr><td>Телемедицина</td><td class="theirs">Не представлена</td><td>Контур с оперативным центром в Грозном</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note" style="margin-top:16px">
+    <b>Первоисточник и правовая рамка</b>
+    Идея тура взята с опубликованного проекта <a href="https://mos03project.ru/salon/" target="_blank" rel="noopener">ССиНМП им. А. С. Пучкова</a>. Панорамы, интерьеры и фотоматериалы того тура принадлежат правообладателю, поэтому побайтовая копия здесь не делалась: разметка, стили и движок написаны заново, а панорамы подставляются ваши — снятые на грозненских машинах. Ссылка на первоисточник сохранена намеренно.
+  </div>
+</section>
+
+<footer>
+  <div>Научно-практический проект «Разработка инновационного салона автомобиля скорой медицинской помощи как автономного лечебно-диагностического комплекса с реализацией телемедицинских технологий». Чеченская Республика, г. Грозный.</div>
+  <div>Названия организаций, номера подстанций и реквизиты заказчика подставляются перед публикацией — в макете они намеренно оставлены обобщёнными.</div>
+</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  var GROUPS = {
+    diag:  {label:"Диагностика",      color:"#C8102E"},
+    tele:  {label:"Телемедицина",     color:"#1B74E4"},
+    life:  {label:"Жизнеобеспечение", color:"#0B7A5C"},
+    ergo:  {label:"Эргономика",       color:"#9A6100"},
+    body:  {label:"Кузов",            color:"#6A4FB6"},
+    sign:  {label:"Светографика",     color:"#C8102E"},
+    access:{label:"Доступ и погрузка",color:"#0B7A5C"},
+    link:  {label:"Связь и питание",  color:"#1B74E4"},
+    ops:   {label:"Оперативный контур",color:"#9A6100"}
+  };
+
+  var REQ = "Значения выше — проектное требование: закладывается в ТЗ и проверяется на этапах 06–08.";
+
+  var SCENES = [
+    {
+      id:"c-salon", kind:"interior", url:null,
+      name:"Класс C · салон", sub:"реанимобиль",
+      walls:[
+        {from:315,to:45,  name:"ПЕРЕГОРОДКА · КАБИНА",       tone:0},
+        {from:45, to:135, name:"ПРАВЫЙ БОРТ · РАБОЧЕЕ МЕСТО", tone:1},
+        {from:135,to:225, name:"ЗАДНИЕ ДВЕРИ · ПОГРУЗКА",     tone:0},
+        {from:225,to:315, name:"ЛЕВЫЙ БОРТ · ХРАНЕНИЕ",       tone:1}
+      ],
+      ceil:"ПОТОЛОК · СВЕТ И ВЕНТИЛЯЦИЯ", floor:"ПОЛ · ПЛАТФОРМА КАТАЛКИ",
+      spots:[
+        {id:"monitor",g:"diag",lon:95,lat:6,t:"Монитор пациента с телеметрией",
+         s:"Центральный узел сбора витальных показателей. Передаёт поток на бортовой сервер без отдельных действий бригады.",
+         p:[["Каналы","ЭКГ, SpO₂, НИАД, EtCO₂, T"],["Период выгрузки","1 с"],["Буфер при разрыве","≥ 60 мин"]],
+         tele:"Источник первичного потока: врач-консультант в Грозном видит эти значения раньше, чем автомобиль доедет до стационара."},
+        {id:"ecg",g:"diag",lon:62,lat:2,t:"ЭКГ 12 отведений",
+         s:"Снятие и автоматическая передача электрокардиограммы прямо с места вызова.",
+         p:[["Отведений","12"],["Формат","совместимый с МИС"],["Отправка","автоматическая"]],
+         tele:"Решение о маршрутизации в сосудистый центр принимается по ЭКГ до прибытия, без повторного снятия в приёмном отделении."},
+        {id:"usi",g:"diag",lon:76,lat:-4,t:"Портативный УЗИ-аппарат",
+         s:"Ультразвук в месте оказания помощи: свободная жидкость, оценка сердца и лёгких, сосудистый доступ.",
+         p:[["Датчики","конвексный, линейный"],["Питание","от бортовой сети"],["Вывод","на экран и в поток"]],
+         tele:"Изображение транслируется консультанту, который ведёт руку врача голосом — ключевой сценарий для бригад без профильной подготовки."},
+        {id:"lab",g:"diag",lon:118,lat:-6,t:"Экспресс-лаборатория",
+         s:"Анализ крови в салоне: газы, электролиты, лактат, маркёры повреждения миокарда.",
+         p:[["Время анализа","минуты"],["Проба","капиллярная"],["Расходники","картриджи"]],
+         tele:"Результат уходит вместе с витальными данными — консультант видит клинику и лабораторию одновременно."},
+        {id:"station",g:"tele",lon:15,lat:4,t:"Телемедицинская рабочая станция",
+         s:"Пульт связи бригады: видеосвязь, карта вызова, управление трансляцией.",
+         p:[["Экран","антибликовый"],["Управление","сенсор и кнопки"],["Работа в перчатках","да"]],
+         tele:"Точка входа врача в контур: один жест — вызов консультанта, без набора номера и поиска контакта."},
+        {id:"cam",g:"tele",lon:180,lat:46,t:"Купольная камера обзора салона",
+         s:"Общий план салона для консультанта и объективная фиксация хода помощи.",
+         p:[["Разрешение","720p и выше"],["Угол","обзор всего салона"],["Запись","локально и выгрузка"]],
+         tele:"Даёт консультанту контекст: положение пациента, сколько рук в работе, что уже подключено."},
+        {id:"srv",g:"tele",lon:350,lat:-10,t:"Бортовой сервер и шлюз",
+         s:"Сбор данных с приборов, шифрование, буферизация и выгрузка при восстановлении связи.",
+         p:[["Хранение","на борту, зашифровано"],["Протокол","защищённый туннель"],["Обезличивание","до передачи"]],
+         tele:"Гарантирует, что разрыв связи в горах не теряет данные: контур восстанавливается сам, без действий бригады."},
+        {id:"vent",g:"life",lon:108,lat:10,t:"Транспортный аппарат ИВЛ",
+         s:"Искусственная вентиляция лёгких в движении с контролем параметров дыхания.",
+         p:[["Режимы","по объёму и по давлению"],["Автономность","от собственного АКБ"],["Кислород","от бортовой станции"]],
+         tele:"Параметры вентиляции входят в общий поток: консультант корректирует настройки, наблюдая ответ пациента."},
+        {id:"defib",g:"life",lon:130,lat:4,t:"Дефибриллятор-монитор",
+         s:"Дефибрилляция, кардиоверсия и наружная кардиостимуляция.",
+         p:[["Режим","ручной и автоматический"],["Запись эпизода","да"],["Передача","в общий поток"]],
+         tele:"Эпизоды разрядов и ритм до и после фиксируются и уходят в центр — основа для разбора случая."},
+        {id:"o2",g:"life",lon:250,lat:0,t:"Кислородная станция и панель газов",
+         s:"Централизованная разводка кислорода с точками подключения у рабочих мест.",
+         p:[["Точки подключения","у изголовья и на борту"],["Контроль остатка","на панели"],["Резерв","переносной баллон"]],
+         tele:"Остаток кислорода передаётся в центр: диспетчер видит ограничение по времени транспортировки."},
+        {id:"pwr",g:"life",lon:286,lat:-20,t:"Энергоузел салона",
+         s:"Батарея салона, инвертор и распределение по потребителям с приоритетами.",
+         p:[["Химия ячеек","LiFePO₄"],["Приоритет","медоборудование выше комфорта"],["Индикация","остаток в часах"]],
+         tele:"Автономность контура связи зависит от этого узла — он резервируется отдельно от бортовой сети автомобиля."},
+        {id:"fridge",g:"life",lon:215,lat:-4,t:"Термоконтейнер для препаратов",
+         s:"Поддержание температурного режима лекарственных средств с журналом отклонений.",
+         p:[["Диапазон","по требованиям к препаратам"],["Журнал","непрерывный"],["Сигнал","при выходе из диапазона"]],
+         tele:"Журнал температуры выгружается вместе с картой вызова — закрывает вопрос пригодности введённого препарата."},
+        {id:"seat",g:"ergo",lon:45,lat:-12,t:"Капитанское кресло врача",
+         s:"Поворотное кресло с фиксацией: доступ к пациенту с головного конца в движении.",
+         p:[["Поворот","с фиксацией положений"],["Ремни","штатные"],["Доступ","к голове и грудной клетке"]],
+         tele:"Место сориентировано так, чтобы врач одновременно видел пациента и экран телемедицинской станции."},
+        {id:"stretcher",g:"ergo",lon:180,lat:-48,t:"Каталка с электроприводом",
+         s:"Погрузка и выгрузка без ручного подъёма, регулировка высоты и положения.",
+         p:[["Привод","электрический"],["Фиксация","на платформе"],["Положения","в том числе полусидя"]],
+         tele:"Снижает время погрузки — именно оно чаще всего съедает выигрыш, полученный на догоспитальной диагностике."},
+        {id:"rails",g:"ergo",lon:300,lat:6,t:"Рейлинги и модульные укладки",
+         s:"Универсальные направляющие: оборудование и укладки переставляются без переделки салона.",
+         p:[["Крепление","единый интерфейс"],["Состав","по профилю вызова"],["Замена","без инструмента"]],
+         tele:"Модульность позволяет собирать телемедицинскую конфигурацию под конкретный профиль бригады."},
+        {id:"light",g:"ergo",lon:90,lat:48,t:"Освещение и вентиляция",
+         s:"Бестеневой свет рабочей зоны, отдельный дежурный режим и управляемый воздухообмен.",
+         p:[["Режимы","рабочий, дежурный, транспортный"],["Цветопередача","высокая"],["Воздухообмен","управляемый"]],
+         tele:"Качество света прямо определяет пригодность видеопотока для дистанционной оценки состояния пациента."}
+      ]
+    },
+    {
+      id:"b-salon", kind:"interior", url:null,
+      name:"Класс B · салон", sub:"экстренная помощь",
+      walls:[
+        {from:315,to:45,  name:"ПЕРЕГОРОДКА · КАБИНА",     tone:0},
+        {from:45, to:135, name:"ПРАВЫЙ БОРТ · МЕСТО ФЕЛЬДШЕРА", tone:1},
+        {from:135,to:225, name:"ЗАДНИЕ ДВЕРИ · ПОГРУЗКА",   tone:0},
+        {from:225,to:315, name:"ЛЕВЫЙ БОРТ · УКЛАДКИ",      tone:1}
+      ],
+      ceil:"ПОТОЛОК · СВЕТ", floor:"ПОЛ · ПЛАТФОРМА КАТАЛКИ",
+      spots:[
+        {id:"b-monitor",g:"diag",lon:92,lat:4,t:"Монитор-дефибриллятор",
+         s:"Совмещённый прибор: мониторинг и дефибрилляция в одном корпусе — основа оснащения класса B.",
+         p:[["Каналы","ЭКГ, SpO₂, НИАД"],["Дефибрилляция","ручная и АНД"],["Передача ЭКГ","есть"]],
+         tele:"Даже в базовой комплектации передача ЭКГ в центр меняет маршрут госпитализации — это минимальный полезный контур."},
+        {id:"b-bag",g:"diag",lon:262,lat:2,t:"Укладки по профилю вызова",
+         s:"Акушерская, травматологическая, педиатрическая реанимационная, укладка личной профилактики.",
+         p:[["Размещение","на рейлингах слева"],["Маркировка","цветовая"],["Доступ","одной рукой"]],
+         tele:"Состав укладки фиксируется в карте вызова: консультант знает, чем бригада располагает на месте."},
+        {id:"b-o2",g:"life",lon:243,lat:-2,t:"Кислородная разводка",
+         s:"Баллон в отсеке и точка подключения у изголовья пациента.",
+         p:[["Баллон","в наружном отсеке"],["Точка","у изголовья"],["Контроль остатка","манометр"]],
+         tele:"Остаток кислорода — один из параметров, ограничивающих выбор стационара при длинном плече."},
+        {id:"b-suction",g:"life",lon:120,lat:-4,t:"Аспиратор",
+         s:"Отсасыватель для санации дыхательных путей, закреплён в зоне доступа фельдшера.",
+         p:[["Тип","электрический"],["Питание","бортовое и АКБ"],["Крепление","быстросъёмное"]],
+         tele:"Не участвует в передаче данных: контур не должен требовать подключения там, где счёт идёт на секунды."},
+        {id:"b-seat",g:"ergo",lon:50,lat:-12,t:"Кресло фельдшера",
+         s:"Поворотное кресло у изголовья, рассчитанное на работу бригады из двух человек.",
+         p:[["Поворот","с фиксацией"],["Ремни","штатные"],["Доступ","к голове пациента"]],
+         tele:"Компоновка класса B рассчитана на двоих — телемедицинский пульт совмещается с местом фельдшера, отдельного рабочего места нет."},
+        {id:"b-stretch",g:"ergo",lon:180,lat:-46,t:"Кресельные носилки и щит",
+         s:"Вынос пациента по лестнице и иммобилизация — критично для городской застройки без лифта.",
+         p:[["Носилки","кресельные"],["Щит","с фиксаторами"],["Хранение","на борту салона"]],
+         tele:"Время выноса включается в общий хронометраж вызова, который анализируется на этапе 12."},
+        {id:"b-light",g:"ergo",lon:90,lat:48,t:"Освещение салона",
+         s:"Рабочий и дежурный режимы света без слепящих бликов на приборах.",
+         p:[["Режимы","рабочий и дежурный"],["Источник","светодиодный"],["Управление","у входа и у врача"]],
+         tele:"При трансляции видео свет переключается в рабочий режим — иначе консультант видит силуэты."},
+        {id:"b-link",g:"tele",lon:8,lat:0,t:"Планшет бригады",
+         s:"Мобильное рабочее место: карта вызова, связь с центром, передача ЭКГ.",
+         p:[["Исполнение","защищённое"],["Связь","LTE, Wi-Fi борта"],["Автономность","смена"]],
+         tele:"Минимальная конфигурация контура для класса B: без стационарной станции, но с тем же протоколом обмена."}
+      ]
+    },
+    {
+      id:"exterior", kind:"exterior", url:null,
+      name:"Экстерьер", sub:"кузов и подстанция",
+      spots:[
+        {id:"bar",g:"sign",lon:0,lat:13,t:"Светосигнальное устройство",
+         s:"Балка проблесковых маячков со звуковой сигнализацией и дополнительными проблесковыми модулями.",
+         p:[["Цвет","синий"],["Звук","многотональный"],["Доп. модули","по бортам и сзади"]],
+         tele:"Не входит в контур данных, но включение сигнала фиксируется как метка времени в карте вызова."},
+        {id:"livery",g:"sign",lon:348,lat:1,t:"Цветографическая схема",
+         s:"Опознавательная окраска и надписи по ГОСТ Р 50574 — узнаваемость машины с большого расстояния.",
+         p:[["Основа","белая"],["Полоса","красная светоотражающая"],["Надпись","зеркальная спереди"]],
+         tele:"—"},
+        {id:"reardoor",g:"access",lon:30,lat:-3,t:"Задние двери и погрузочная зона",
+         s:"Основной путь погрузки: распашные двери с фиксацией в открытом положении и ровная платформа.",
+         p:[["Двери","распашные, с фиксацией"],["Угол открытия","до стены кузова"],["Порог","минимальный"]],
+         tele:"—"},
+        {id:"step",g:"access",lon:25,lat:-16,t:"Выдвижная подножка",
+         s:"Ступень, снижающая высоту входа при погрузке и посадке сопровождающего.",
+         p:[["Привод","электрический"],["Убирается","при начале движения"],["Покрытие","противоскользящее"]],
+         tele:"—"},
+        {id:"sidedoor",g:"access",lon:338,lat:-4,t:"Боковая сдвижная дверь",
+         s:"Второй вход в салон: доступ к пациенту сбоку и загрузка оборудования.",
+         p:[["Тип","сдвижная"],["Поручни","на входной группе"],["Фиксация","в открытом положении"]],
+         tele:"—"},
+        {id:"ant",g:"link",lon:6,lat:17,t:"Антенный блок на крыше",
+         s:"Антенны сотовых операторов, спутникового канала и радиосвязи в одном обтекателе.",
+         p:[["Каналы","LTE/5G мультиоператор"],["Резерв","спутниковый"],["Переключение","без разрыва сессии"]],
+         tele:"Узел, от которого зависит работоспособность всего контура на маршруте — особенно в горных районах республики."},
+        {id:"shore",g:"link",lon:344,lat:-12,t:"Разъём береговой сети 220 В",
+         s:"Подключение к сети подстанции: подзаряд батарей и предпусковой подогрев без запуска двигателя.",
+         p:[["Напряжение","220 В"],["Блокировка","при подключении"],["Индикация","снаружи"]],
+         tele:"Гарантирует, что смена начинается с полностью заряженным энергоузлом контура связи."},
+        {id:"o2box",g:"body",lon:16,lat:-9,t:"Отсек кислородных баллонов",
+         s:"Наружный отсек: замена баллона без входа в салон и без остановки работы бригады.",
+         p:[["Доступ","снаружи"],["Крепление","быстросъёмное"],["Вентиляция","отсека"]],
+         tele:"—"},
+        {id:"worklight",g:"body",lon:21,lat:10,t:"Наружный осветитель рабочей зоны",
+         s:"Свет позади и по бортам машины для работы на месте происшествия в тёмное время суток.",
+         p:[["Источник","светодиодный"],["Зона","задняя и боковые"],["Управление","из салона"]],
+         tele:"Определяет пригодность наружной видеосъёмки, если консультация начинается ещё до погрузки."},
+        {id:"station",g:"ops",lon:120,lat:4,t:"Подстанция скорой помощи",
+         s:"Пост стоянки бригад: подключение к береговой сети, дезинфекция салона, пополнение укладок.",
+         p:[["Стоянка","с подключением 220 В"],["Обработка","после каждого вызова"],["Пополнение","укладок и газов"]],
+         tele:"Место, где борт синхронизирует архив записей и получает обновления программного обеспечения."},
+        {id:"mount",g:"ops",lon:205,lat:7,t:"Горный рельеф на юге республики",
+         s:"Направление на горные районы: длинное плечо доставки и неустойчивое сотовое покрытие.",
+         p:[["Плечо доставки","часы"],["Покрытие","прерывистое"],["Резерв связи","спутниковый"]],
+         tele:"Сценарий, ради которого строится контур: консультация специалиста приходит на место раньше, чем автомобиль довезёт пациента."}
+      ]
+    },
+    {
+      id:"center", kind:"interior", url:null,
+      name:"Оперативный центр", sub:"Грозный",
+      walls:[
+        {from:315,to:45,  name:"ВИДЕОСТЕНА · ОБСТАНОВКА",   tone:0},
+        {from:45, to:135, name:"ПУЛЬТЫ ПРИЁМА ВЫЗОВОВ 103",  tone:1},
+        {from:135,to:225, name:"МЕСТО СТАРШЕГО ВРАЧА",       tone:0},
+        {from:225,to:315, name:"СЕРВЕРНАЯ И СВЯЗЬ",          tone:1}
+      ],
+      ceil:"ПОТОЛОК · ОСВЕЩЕНИЕ ЗАЛА", floor:"ПОЛ · ФАЛЬШПОЛ С ТРАССАМИ",
+      spots:[
+        {id:"desk",g:"ops",lon:90,lat:2,t:"Пульт приёма вызовов",
+         s:"Рабочее место диспетчера: приём обращения, определение повода, назначение бригады.",
+         p:[["Номер","103"],["Запись разговора","непрерывная"],["Карта вызова","заводится сразу"]],
+         tele:"Карта вызова — ключ, по которому поток данных с борта связывается с конкретным пациентом."},
+        {id:"senior",g:"ops",lon:180,lat:2,t:"Место старшего врача смены",
+         s:"Контроль сложных вызовов, распределение ресурсов, решение о привлечении консультанта.",
+         p:[["Обзор","всех активных вызовов"],["Право","перенаправить бригаду"],["Связь","со стационарами"]],
+         tele:"Точка принятия решения: подключать ли профильного специалиста и в какой стационар везти."},
+        {id:"wall",g:"ops",lon:0,lat:10,t:"Видеостена обстановки",
+         s:"Положение бригад, статусы вызовов, загрузка приёмных отделений.",
+         p:[["Слои","бригады, вызовы, стационары"],["Обновление","непрерывное"],["Архив","по смене"]],
+         tele:"Сюда же выводится список активных телемедицинских сессий — видно, какой борт сейчас на связи."},
+        {id:"consult",g:"tele",lon:135,lat:0,t:"Пульт врача-консультанта",
+         s:"Приём потока с борта: витальные показатели, видео, ЭКГ, связь с бригадой голосом.",
+         p:[["Подъём карты","автоматический"],["Каналы","данные, видео, голос"],["Протокол","фиксируется"]],
+         tele:"Ядро контура со стороны центра. Отсюда специалист ведёт бригаду, не покидая рабочего места."},
+        {id:"srvroom",g:"tele",lon:270,lat:0,t:"Серверная и шлюз приёма",
+         s:"Приём, расшифровка и хранение потоков с бортов; интеграция с медицинской информационной системой.",
+         p:[["Хранение","с резервированием"],["Доступ","по ролям"],["Журнал","всех обращений к данным"]],
+         tele:"Здесь замыкается защита персональных данных: обезличенное на борту связывается с картой только внутри контура."},
+        {id:"link",g:"tele",lon:300,lat:-8,t:"Узел связи с бортами",
+         s:"Каналы операторов, спутниковый шлюз и контроль качества связи по каждому борту.",
+         p:[["Мониторинг","по каждому борту"],["Резерв","спутниковый"],["Тревога","при потере борта"]],
+         tele:"Показывает диспетчеру, какие машины сейчас вне связи — по ним решения принимаются без расчёта на консультацию."},
+        {id:"arch",g:"ops",lon:225,lat:-6,t:"Архив записей и разборов",
+         s:"Хранение записей консультаций для клинических разборов и обучения бригад.",
+         p:[["Срок хранения","по регламенту"],["Разборы","регулярные"],["Обучение","на реальных случаях"]],
+         tele:"Замыкает обратную связь этапа 12: данные эксплуатации возвращаются в доработку конструкции и протоколов."}
+      ]
+    }
+  ];
+
+  var stage = document.getElementById("stage");
+  var spotsBox = document.getElementById("spots");
+  var readout = document.getElementById("readout");
+  var detail = document.getElementById("detail");
+  var chipsBox = document.getElementById("chips");
+  var scenesBox = document.getElementById("scenes");
+  var sceneName = document.getElementById("sceneName");
+
+  document.getElementById("cfgjson").value = JSON.stringify(
+    SCENES.map(function(sc){
+      return {id:sc.id, name:sc.name, kind:sc.kind, url:sc.url,
+        spots:sc.spots.map(function(s){
+          return {id:s.id, group:s.g, lon:s.lon, lat:s.lat, title:s.t, summary:s.s, specs:s.p, telemedicine:s.tele};
+        })};
+    }), null, 2);
+
+  function norm(a){ a = a % 360; return a < 0 ? a + 360 : a; }
+  function hexA(hex, a){
+    var n = parseInt(hex.slice(1), 16);
+    return "rgba(" + ((n>>16)&255) + "," + ((n>>8)&255) + "," + (n&255) + "," + a + ")";
+  }
+  function isDark(){
+    var a = document.documentElement.getAttribute("data-theme");
+    if (a === "dark") return true;
+    if (a === "light") return false;
+    return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  }
+
+  // ---------- схемы сцен -------------------------------------------------
+  var W = 4096, H = 2048;
+
+  function newCanvas(){
+    var c = document.createElement("canvas");
+    c.width = W; c.height = H;
+    return c;
+  }
+  function labeller(x){
+    return function(text, lon, lat, size, color, weight, font){
+      var px = norm(lon)/360*W, py = (90-lat)/180*H;
+      var k = 1/Math.max(0.28, Math.cos(lat*Math.PI/180));
+      x.save();
+      x.translate(px, py); x.scale(k, 1);
+      x.fillStyle = color;
+      x.font = (weight||"600") + " " + size + "px " + (font || "'Oswald','Helvetica Neue',Arial,sans-serif");
+      x.textAlign = "center"; x.textBaseline = "middle";
+      x.fillText(text, 0, 0);
+      x.restore();
+    };
+  }
+  function spotGlow(x, sc, dark){
+    for (var s = 0; s < sc.spots.length; s++){
+      var sp = sc.spots[s];
+      var cx = norm(sp.lon)/360*W, cy = (90-sp.lat)/180*H;
+      var kk = 1/Math.max(0.28, Math.cos(sp.lat*Math.PI/180));
+      x.save(); x.translate(cx, cy); x.scale(kk, 1);
+      var g = x.createRadialGradient(0,0,0,0,0,120);
+      g.addColorStop(0, hexA(GROUPS[sp.g].color, dark ? .42 : .26));
+      g.addColorStop(1, hexA(GROUPS[sp.g].color, 0));
+      x.fillStyle = g; x.beginPath(); x.arc(0,0,120,0,Math.PI*2); x.fill();
+      x.restore();
+    }
+  }
+
+  function drawInterior(sc){
+    var c = newCanvas(), x = c.getContext("2d"), dark = isDark(), L = labeller(x);
+    var wall  = dark ? "#16232A" : "#DCE6E9";
+    var wallB = dark ? "#1B2C34" : "#D1DEE2";
+    var ceil  = dark ? "#101A1F" : "#E9F0F2";
+    var floor = dark ? "#0C1418" : "#C4D3D8";
+    var grid  = dark ? "rgba(150,180,190,.13)" : "rgba(40,70,80,.13)";
+    var ink   = dark ? "rgba(210,228,233,.78)" : "rgba(30,50,58,.72)";
+    var dim   = dark ? "rgba(180,205,213,.30)" : "rgba(30,50,58,.28)";
+    var yC = H*(90-40)/180, yF = H*(90+40)/180;
+
+    x.fillStyle = wall;  x.fillRect(0,0,W,H);
+    x.fillStyle = ceil;  x.fillRect(0,0,W,yC);
+    x.fillStyle = floor; x.fillRect(0,yF,W,H-yF);
+
+    sc.walls.forEach(function(w){
+      if (w.tone !== 1) return;
+      var a = norm(w.from)/360*W, b = norm(w.to)/360*W;
+      x.fillStyle = wallB;
+      if (b > a) x.fillRect(a, yC, b-a, yF-yC);
+      else { x.fillRect(a, yC, W-a, yF-yC); x.fillRect(0, yC, b, yF-yC); }
+    });
+
+    x.strokeStyle = grid; x.lineWidth = 2;
+    for (var d = 0; d < 360; d += 15){ var px = d/360*W; x.beginPath(); x.moveTo(px,0); x.lineTo(px,H); x.stroke(); }
+    for (var la = -75; la <= 75; la += 15){ var py = (90-la)/180*H; x.beginPath(); x.moveTo(0,py); x.lineTo(W,py); x.stroke(); }
+
+    x.strokeStyle = dark ? "rgba(160,195,205,.35)" : "rgba(25,45,55,.26)";
+    x.lineWidth = 5;
+    sc.walls.forEach(function(w){
+      var e = norm(w.from)/360*W;
+      x.beginPath(); x.moveTo(e,yC); x.lineTo(e,yF); x.stroke();
+    });
+    x.lineWidth = 4;
+    x.beginPath(); x.moveTo(0,yC); x.lineTo(W,yC); x.stroke();
+    x.beginPath(); x.moveTo(0,yF); x.lineTo(W,yF); x.stroke();
+
+    sc.walls.forEach(function(w){
+      var f = norm(w.from), t = norm(w.to);
+      var mid = f + norm(t - f)/2;
+      L(w.name, mid, 26, 56, ink, "600");
+      L("сектор " + Math.round(norm(t - f)) + "°", mid, 19, 28, dim, "500", "'JetBrains Mono',monospace");
+    });
+    L(sc.ceil, 90, 62, 50, dim, "600");
+    L(sc.floor, 180, -62, 50, dim, "600");
+
+    x.fillStyle = dim; x.font = "500 26px 'JetBrains Mono',monospace";
+    x.textAlign = "center"; x.textBaseline = "middle";
+    for (var dd = 0; dd < 360; dd += 30) x.fillText(dd + "°", dd/360*W, H/2);
+
+    spotGlow(x, sc, dark);
+    return c;
+  }
+
+  function drawExterior(sc){
+    var c = newCanvas(), x = c.getContext("2d"), dark = isDark(), L = labeller(x);
+    var horizon = H*(90-4)/180;
+
+    var sky = x.createLinearGradient(0,0,0,horizon);
+    if (dark){ sky.addColorStop(0,"#0A1218"); sky.addColorStop(1,"#1A2A33"); }
+    else { sky.addColorStop(0,"#BCD3DE"); sky.addColorStop(1,"#E4EDF1"); }
+    x.fillStyle = sky; x.fillRect(0,0,W,horizon);
+
+    var gnd = x.createLinearGradient(0,horizon,0,H);
+    if (dark){ gnd.addColorStop(0,"#161E22"); gnd.addColorStop(1,"#0B1013"); }
+    else { gnd.addColorStop(0,"#9FAEB4"); gnd.addColorStop(1,"#79888E"); }
+    x.fillStyle = gnd; x.fillRect(0,horizon,W,H-horizon);
+
+    // горы на юге
+    x.fillStyle = dark ? "#16232B" : "#A8BAC4";
+    x.beginPath(); x.moveTo(norm(150)/360*W, horizon);
+    var peaks = [[160,10],[172,5],[184,14],[196,6],[208,11],[220,4],[236,8],[252,3]];
+    peaks.forEach(function(pk){ x.lineTo(norm(pk[0])/360*W, (90-pk[1])/180*H); });
+    x.lineTo(norm(268)/360*W, horizon); x.closePath(); x.fill();
+
+    // здание подстанции
+    var bx1 = norm(100)/360*W, bx2 = norm(142)/360*W;
+    x.fillStyle = dark ? "#1C272C" : "#C9D4D8";
+    x.fillRect(bx1, (90-13)/180*H, bx2-bx1, horizon-(90-13)/180*H);
+    x.fillStyle = dark ? "#0E1418" : "#8FA0A7";
+    for (var wy = 0; wy < 2; wy++)
+      for (var wx = 0; wx < 5; wx++)
+        x.fillRect(bx1 + 40 + wx*((bx2-bx1-80)/5), (90-10)/180*H + wy*90, 70, 52);
+
+    // кузов автомобиля: сектор 318..42
+    var vx1 = norm(318)/360*W, vx2 = W, vx3 = 0, vx4 = norm(42)/360*W;
+    var vTop = (90-11)/180*H, vBot = (90+13)/180*H;
+    function bodyRect(f){ f(vx1, vx2 - vx1); f(vx3, vx4 - vx3); }
+    x.fillStyle = dark ? "#D8DEE1" : "#FFFFFF";
+    bodyRect(function(px,w){ x.fillRect(px, vTop, w, vBot-vTop); });
+    // красная светоотражающая полоса
+    x.fillStyle = "#C8102E";
+    bodyRect(function(px,w){ x.fillRect(px, vTop + (vBot-vTop)*0.54, w, (vBot-vTop)*0.13); });
+    // остекление
+    x.fillStyle = dark ? "#2B3A42" : "#5E7580";
+    bodyRect(function(px,w){ x.fillRect(px + w*0.08, vTop + (vBot-vTop)*0.16, w*0.84, (vBot-vTop)*0.30); });
+    // тень под кузовом
+    x.fillStyle = dark ? "rgba(0,0,0,.5)" : "rgba(30,45,52,.28)";
+    bodyRect(function(px,w){ x.fillRect(px, vBot, w, 46); });
+    // балка маячков
+    x.fillStyle = "#1B74E4";
+    bodyRect(function(px,w){ x.fillRect(px + w*0.16, vTop - 34, w*0.68, 30); });
+
+    L("СКОРАЯ МЕДИЦИНСКАЯ ПОМОЩЬ", 0, -1, 40, "#C8102E", "600");
+    L("103", 0, -5, 54, dark ? "#0E1418" : "#22333A", "600");
+    L("ПОДСТАНЦИЯ", 121, 2, 44, dark ? "rgba(200,220,228,.55)" : "rgba(35,55,64,.48)", "600");
+    L("ЮЖНЫЕ ГОРНЫЕ РАЙОНЫ", 204, 17, 46, dark ? "rgba(190,214,222,.45)" : "rgba(40,62,72,.40)", "600");
+
+    // разметка площадки
+    x.strokeStyle = dark ? "rgba(190,214,222,.16)" : "rgba(255,255,255,.4)";
+    x.lineWidth = 6;
+    for (var a2 = 0; a2 < 360; a2 += 20){
+      var p1 = norm(a2)/360*W;
+      x.beginPath(); x.moveTo(p1, horizon + 60); x.lineTo(p1, H); x.stroke();
+    }
+
+    x.fillStyle = dark ? "rgba(190,214,222,.30)" : "rgba(40,62,72,.30)";
+    x.font = "500 26px 'JetBrains Mono',monospace";
+    x.textAlign = "center"; x.textBaseline = "middle";
+    for (var dd2 = 0; dd2 < 360; dd2 += 30) x.fillText(dd2 + "°", dd2/360*W, (90-24)/180*H);
+
+    spotGlow(x, sc, dark);
+    return c;
+  }
+
+  function schematic(sc){ return sc.kind === "exterior" ? drawExterior(sc) : drawInterior(sc); }
+
+  // ---------- сцена three.js --------------------------------------------
+  if (!window.THREE || !document.createElement("canvas").getContext("webgl")){ fallback(); return; }
+
+  var renderer;
+  try { renderer = new THREE.WebGLRenderer({antialias:true}); }
+  catch(e){ fallback(); return; }
+
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  stage.insertBefore(renderer.domElement, spotsBox);
+
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(78, 21/9, 0.1, 1000);
+  var geo = new THREE.SphereGeometry(500, 72, 44);
+  geo.scale(-1, 1, 1);
+  var mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({map:null}));
+  scene.add(mesh);
+
+  var lon = 20, lat = 3, fov = 78;
+  var autoSpin = !(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  var pointers = {}, pCount = 0, lastX = 0, lastY = 0, pinchStart = 0, fovStart = 0;
+  var current = null, texture = null, custom = false, hidden = {}, nodes = [], active = null;
+
+  function setTexture(source, isCustom){
+    var t = (source instanceof HTMLCanvasElement && !isCustom)
+      ? new THREE.CanvasTexture(source)
+      : new THREE.Texture(source);
+    t.encoding = THREE.sRGBEncoding;
+    t.minFilter = THREE.LinearFilter;
+    t.generateMipmaps = false;
+    t.needsUpdate = true;
+    mesh.material.map = t;
+    mesh.material.needsUpdate = true;
+    if (texture) texture.dispose();
+    texture = t;
+    custom = !!isCustom;
+  }
+
+  function dirOf(lo, la, r){
+    var phi = (90-la)*Math.PI/180, th = lo*Math.PI/180;
+    return new THREE.Vector3(
+      r*Math.sin(phi)*Math.cos(th),
+      r*Math.cos(phi),
+      r*Math.sin(phi)*Math.sin(th)
+    );
+  }
+
+  function resize(){
+    var w = stage.clientWidth, h = stage.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w/h; camera.updateProjectionMatrix();
+  }
+  window.addEventListener("resize", resize);
+  if (window.ResizeObserver) new ResizeObserver(resize).observe(stage);
+
+  // ---------- переключение сцен -----------------------------------------
+  SCENES.forEach(function(sc){
+    var b = document.createElement("button");
+    b.className = "scene"; b.type = "button";
+    b.setAttribute("aria-pressed", "false");
+    b.innerHTML = '<b></b><span></span>';
+    b.querySelector("b").textContent = sc.name;
+    b.querySelector("span").textContent = sc.sub;
+    b.addEventListener("click", function(){ loadScene(sc.id); });
+    sc.btn = b;
+    scenesBox.appendChild(b);
+  });
+
+  function loadScene(id){
+    var sc = null;
+    for (var i = 0; i < SCENES.length; i++) if (SCENES[i].id === id) sc = SCENES[i];
+    if (!sc) return;
+    current = sc;
+    hidden = {};
+    SCENES.forEach(function(s){ s.btn.setAttribute("aria-pressed", s === sc ? "true" : "false"); });
+    sceneName.textContent = sc.name + " · " + sc.sub;
+
+    setTexture(schematic(sc), false);
+    if (sc.url){
+      var img = new Image(); img.crossOrigin = "anonymous";
+      img.onload = function(){ if (current === sc) applyImage(img); };
+      img.src = sc.url;
+    }
+
+    // точки
+    spotsBox.innerHTML = "";
+    nodes = sc.spots.map(function(sp){
+      var b = document.createElement("button");
+      b.className = "hs"; b.type = "button";
+      b.innerHTML = '<span class="dot"></span><span class="tag"></span>';
+      b.querySelector(".dot").style.background = GROUPS[sp.g].color;
+      b.querySelector(".tag").textContent = sp.t;
+      b.setAttribute("aria-label", sp.t + " — " + GROUPS[sp.g].label);
+      b.addEventListener("click", function(ev){ ev.stopPropagation(); select(sp.id); });
+      spotsBox.appendChild(b);
+      return {sp:sp, el:b, v:new THREE.Vector3()};
+    });
+
+    // фильтры подсистем текущей сцены
+    chipsBox.innerHTML = "";
+    var seen = {};
+    sc.spots.forEach(function(sp){
+      if (seen[sp.g]) return;
+      seen[sp.g] = true;
+      var ch = document.createElement("button");
+      ch.className = "chip"; ch.type = "button";
+      ch.setAttribute("aria-pressed", "true");
+      ch.innerHTML = '<span class="sw"></span>';
+      ch.querySelector(".sw").style.background = GROUPS[sp.g].color;
+      ch.appendChild(document.createTextNode(GROUPS[sp.g].label));
+      ch.addEventListener("click", function(){
+        hidden[sp.g] = !hidden[sp.g];
+        ch.setAttribute("aria-pressed", hidden[sp.g] ? "false" : "true");
+        if (hidden[sp.g] && active && active.g === sp.g) select(firstVisible());
+      });
+      chipsBox.appendChild(ch);
+    });
+
+    select(sc.spots[0].id);
+    resize();
+  }
+
+  function firstVisible(){
+    for (var i = 0; i < current.spots.length; i++) if (!hidden[current.spots[i].g]) return current.spots[i].id;
+    return null;
+  }
+
+  function select(id){
+    var sp = null;
+    for (var i = 0; i < current.spots.length; i++) if (current.spots[i].id === id) sp = current.spots[i];
+    active = sp;
+    nodes.forEach(function(n){ n.el.classList.toggle("on", !!sp && n.sp.id === sp.id); });
+    if (!sp){
+      detail.innerHTML = '<span class="eyebrow">Узел не выбран</span><p class="sum">Включите хотя бы одну подсистему, чтобы увидеть узлы.</p>';
+      return;
+    }
+    var rows = sp.p.map(function(kv){ return '<div><dt>' + kv[0] + '</dt><dd>' + kv[1] + '</dd></div>'; }).join("");
+    var tele = sp.tele && sp.tele !== "—"
+      ? '<div class="tele-note"><b>Роль в телемедицинском контуре</b>' + sp.tele + '</div>' : '';
+    detail.innerHTML =
+      '<span class="eyebrow" style="color:' + GROUPS[sp.g].color + '">' + GROUPS[sp.g].label + ' · ' + current.name + '</span>' +
+      '<h3>' + sp.t + '</h3>' +
+      '<p class="sum">' + sp.s + '</p>' +
+      '<dl class="specs">' + rows + '</dl>' +
+      '<p style="margin-top:9px;font-size:12px;color:var(--ink-3)">' + REQ + ' <span class="k k-req">проектное требование</span></p>' +
+      tele;
+    lookTo(sp.lon, sp.lat);
+  }
+
+  function lookTo(tLon, tLat){
+    autoSpin = false; setSpinLabel();
+    var d = norm(tLon - lon); if (d > 180) d -= 360;
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+      lon = tLon; lat = tLat; return;
+    }
+    var f0 = lon, l0 = lat, t0 = performance.now(), dur = 520;
+    (function step(now){
+      var k = Math.min(1, (now - t0)/dur);
+      var e = k < .5 ? 2*k*k : -1 + (4 - 2*k)*k;
+      lon = f0 + d*e; lat = l0 + (tLat - l0)*e;
+      if (k < 1) requestAnimationFrame(step);
+    })(performance.now());
+  }
+
+  // ---------- цикл отрисовки --------------------------------------------
+  var fwd = new THREE.Vector3();
+  function render(){
+    if (autoSpin && !pCount) lon += .045;
+    lat = Math.max(-82, Math.min(82, lat));
+    camera.fov = fov; camera.updateProjectionMatrix();
+    camera.lookAt(dirOf(lon, lat, 500));
+    renderer.render(scene, camera);
+
+    camera.getWorldDirection(fwd);
+    var w = stage.clientWidth, h = stage.clientHeight;
+    for (var i = 0; i < nodes.length; i++){
+      var n = nodes[i];
+      if (hidden[n.sp.g]){ n.el.hidden = true; continue; }
+      n.v.copy(dirOf(n.sp.lon, n.sp.lat, 450));
+      if (n.v.clone().normalize().dot(fwd) <= .12){ n.el.hidden = true; continue; }
+      var p = n.v.clone().project(camera);
+      n.el.hidden = false;
+      n.el.style.left = ((p.x*.5 + .5)*w) + "px";
+      n.el.style.top  = ((-p.y*.5 + .5)*h) + "px";
+    }
+    readout.textContent = "азимут " + Math.round(norm(lon)) + "°  наклон " + (lat >= 0 ? "+" : "") + Math.round(lat) + "°  поле " + Math.round(fov) + "°";
+    requestAnimationFrame(render);
+  }
+
+  // ---------- управление -------------------------------------------------
+  stage.addEventListener("pointerdown", function(e){
+    stage.setPointerCapture(e.pointerId);
+    pointers[e.pointerId] = {x:e.clientX, y:e.clientY};
+    pCount++; lastX = e.clientX; lastY = e.clientY;
+    stage.classList.add("dragging");
+    if (pCount === 2){ pinchStart = pinchDist(); fovStart = fov; }
+  });
+  stage.addEventListener("pointermove", function(e){
+    if (!pointers[e.pointerId]) return;
+    pointers[e.pointerId] = {x:e.clientX, y:e.clientY};
+    if (pCount >= 2){
+      var d = pinchDist();
+      if (pinchStart > 0 && d > 0) fov = clampFov(fovStart*pinchStart/d);
+      return;
+    }
+    autoSpin = false; setSpinLabel();
+    lon -= (e.clientX - lastX)*.16*(fov/78);
+    lat += (e.clientY - lastY)*.16*(fov/78);
+    lastX = e.clientX; lastY = e.clientY;
+  });
+  function endPointer(e){
+    if (pointers[e.pointerId]){ delete pointers[e.pointerId]; pCount = Math.max(0, pCount - 1); }
+    if (!pCount) stage.classList.remove("dragging");
+  }
+  stage.addEventListener("pointerup", endPointer);
+  stage.addEventListener("pointercancel", endPointer);
+  stage.addEventListener("wheel", function(e){
+    e.preventDefault(); autoSpin = false; setSpinLabel();
+    fov = clampFov(fov + (e.deltaY > 0 ? 3 : -3));
+  }, {passive:false});
+  function pinchDist(){
+    var k = Object.keys(pointers);
+    if (k.length < 2) return 0;
+    var a = pointers[k[0]], b = pointers[k[1]];
+    return Math.hypot(a.x - b.x, a.y - b.y) || 1;
+  }
+  function clampFov(f){ return Math.max(32, Math.min(95, f)); }
+
+  var spinBtn = document.getElementById("spin");
+  function setSpinLabel(){ spinBtn.textContent = autoSpin ? "Пауза" : "Вращать"; }
+  spinBtn.addEventListener("click", function(){ autoSpin = !autoSpin; setSpinLabel(); });
+
+  // ---------- своя панорама ---------------------------------------------
+  function applyImage(img){
+    var max = renderer.capabilities.maxTextureSize || 4096;
+    var src = img;
+    if (img.width > max){
+      var cv = document.createElement("canvas");
+      cv.width = max; cv.height = Math.round(img.height*max/img.width);
+      cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+      src = cv;
+    }
+    setTexture(src, true);
+  }
+  document.getElementById("panofile").addEventListener("change", function(e){
+    var f = e.target.files && e.target.files[0];
+    if (!f) return;
+    var url = URL.createObjectURL(f), img = new Image();
+    img.onload = function(){ applyImage(img); URL.revokeObjectURL(url); };
+    img.onerror = function(){ URL.revokeObjectURL(url); };
+    img.src = url;
+  });
+
+  // схемы перерисовываются при смене темы, свои панорамы не трогаем
+  if (window.matchMedia){
+    var mq = window.matchMedia("(prefers-color-scheme: dark)");
+    var onTheme = function(){ if (!custom && current) setTexture(schematic(current), false); };
+    if (mq.addEventListener) mq.addEventListener("change", onTheme);
+    else if (mq.addListener) mq.addListener(onTheme);
+  }
+
+  function fallback(){
+    var list = SCENES.map(function(sc){
+      return '<div class="task"><b>' + sc.name + '</b><span>' + sc.spots.map(function(s){
+        return Math.round(s.lon) + '° — ' + s.t;
+      }).join('; ') + '</span></div>';
+    }).join("");
+    stage.style.aspectRatio = "auto";
+    stage.style.padding = "16px";
+    stage.innerHTML = '<p style="font-size:13px;color:var(--ink-2)">Браузер не поддерживает WebGL — тур показан списком узлов с азимутами.</p><div class="tasks" style="margin-top:12px">' + list + '</div>';
+    detail.hidden = true;
+    var f = document.querySelector(".viewer-foot"); if (f) f.hidden = true;
+    scenesBox.hidden = true;
+  }
+
+  resize();
+  loadScene("c-salon");
+  setSpinLabel();
+  requestAnimationFrame(render);
+})();
+</script>
