@@ -305,6 +305,65 @@ body.hidden-ui .rail-top,body.hidden-ui .rail-bottom{background:none}
 #stage.dragging{cursor:grabbing}
 #stage canvas{display:block;width:100%;height:100%}
 #spots{position:absolute;inset:0;pointer-events:none}
+
+/* ---------- многоуровневое меню ---------- */
+.menu{margin-left:auto;display:flex;gap:0;align-items:stretch}
+.mi{position:relative}
+.mi>button,.mi>a{display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink-2);text-decoration:none;
+  padding:9px 13px;transition:color .3s var(--ease);white-space:nowrap}
+.mi>button:hover,.mi>a:hover,.mi.open>button{color:var(--ink)}
+.mi>button svg{width:9px;height:9px;fill:none;stroke:currentColor;stroke-width:2;transition:transform .3s var(--ease)}
+.mi.open>button svg{transform:rotate(180deg)}
+.sub{position:absolute;left:0;top:100%;min-width:236px;background:var(--surface);border:1px solid var(--hair);
+  padding:7px;display:none;z-index:40;box-shadow:0 12px 40px rgba(0,0,0,.09)}
+.mi.open .sub{display:block}
+.sub a{display:block;font-size:13.5px;color:var(--ink-2);text-decoration:none;padding:8px 11px;transition:background .3s var(--ease),color .3s var(--ease)}
+.sub a:hover{background:var(--surface-2);color:var(--ink)}
+.sub .hd{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);padding:9px 11px 5px}
+.burger{margin-left:auto;display:none;width:38px;height:38px;place-items:center;border:1px solid var(--hair)}
+.burger svg{width:16px;height:16px;fill:none;stroke:var(--ink);stroke-width:1.5;stroke-linecap:round}
+@media (max-width:1100px){
+  .menu{display:none;position:absolute;left:0;right:0;top:100%;background:var(--surface);border-bottom:1px solid var(--hair);
+    flex-direction:column;padding:10px 18px 18px;max-height:72vh;overflow-y:auto;box-shadow:0 14px 40px rgba(0,0,0,.1)}
+  .menu.show{display:flex}
+  .burger{display:grid}
+  .sub{position:static;display:block;border:0;box-shadow:none;padding:0 0 6px 12px;min-width:0;background:none}
+  .mi>button{width:100%;justify-content:space-between}
+  .site-in{flex-wrap:wrap;position:relative}
+  .cta{order:-1}
+}
+
+/* ---------- подрубрики ---------- */
+.sub-h{display:flex;align-items:center;gap:14px;margin:42px 0 20px}
+.sub-h b{font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--brass)}
+.sub-h .ln{height:1px;flex:1;background:var(--hair-2)}
+
+/* ---------- СМИ и партнёры ---------- */
+.media{display:grid;gap:0;border-top:1px solid var(--hair)}
+.media a{display:grid;grid-template-columns:132px minmax(0,1fr) 22px;gap:22px;align-items:baseline;padding:18px 0;
+  border-bottom:1px solid var(--hair-2);text-decoration:none;transition:background .3s var(--ease)}
+.media a:hover{background:var(--surface-2)}
+.media .src{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+.media .ttl{font-size:15px;color:var(--ink);line-height:1.5}
+.media .ar{font-family:var(--mono);font-size:13px;color:var(--ink-3);text-align:right}
+.partners{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:1px;background:var(--hair-2);border:1px solid var(--hair-2)}
+.partners div{background:var(--bg);padding:24px 20px;min-height:104px;display:flex;flex-direction:column;justify-content:center}
+.partners b{font-family:var(--display);font-size:15px;font-weight:400}
+.partners span{font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);margin-top:8px}
+
+/* ---------- форма ---------- */
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;max-width:760px}
+.form label{display:block}
+.form .lb{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px;display:block}
+.form input,.form textarea,.form select{width:100%;padding:12px 13px;border:1px solid var(--hair);background:var(--surface);
+  color:var(--ink);font:inherit;font-size:14px;border-radius:0}
+.form input:focus,.form textarea:focus,.form select:focus{outline:1px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
+.form textarea{min-height:128px;resize:vertical}
+.form .full{grid-column:1/-1}
+.form .send{justify-self:start;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;
+  padding:14px 26px;background:var(--accent);color:#fff;transition:opacity .3s var(--ease)}
+.form .send:hover{opacity:.88}
+@media (max-width:640px){.form{grid-template-columns:1fr}.media a{grid-template-columns:1fr;gap:6px}.media .ar{display:none}}
 </style>
 
 <header class="site">
@@ -313,9 +372,47 @@ body.hidden-ui .rail-top,body.hidden-ui .rail-bottom{background:none}
       <span class="mk">103</span>
       <span><b>Республиканская станция<br>скорой медицинской помощи</b><span>Чеченская Республика · Грозный</span></span>
     </span>
-    <nav>
-      <a href="#tury">3D-туры</a><a href="#salon">Салон</a><a href="#osnashchenie">Оснащение</a>
-      <a href="#standart">Стандартизация</a><a href="#project">Проект</a><a href="#gallery">Галерея</a><a href="#contacts">Контакты</a>
+    <button class="burger" id="burger" type="button" aria-label="Меню" aria-expanded="false">
+      <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+    <nav class="menu" id="menu">
+      <span class="mi">
+        <button type="button" aria-expanded="false">О проекте <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+        <span class="sub">
+          <a href="#opisanie">Описание</a>
+          <a href="#smi">СМИ о нас</a>
+          <a href="#gallery">Галерея</a>
+          <a href="#svyaz">Связаться с нами</a>
+        </span>
+      </span>
+      <span class="mi">
+        <button type="button" aria-expanded="false">Салон <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+        <span class="sub">
+          <a href="#salon">Описание</a>
+          <a href="#osobennosti">Особенности</a>
+          <a href="#organizaciya">Организация</a>
+          <a href="#udobstva">Удобства</a>
+        </span>
+      </span>
+      <span class="mi">
+        <button type="button" aria-expanded="false">Стандартизация <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+        <span class="sub">
+          <a href="#standart">Описание</a>
+          <a href="#razmeshchenie">Размещение в салоне</a>
+          <a href="#ukladka-air">Укладка АиР</a>
+          <a href="#ukladka-smp">Укладка СМП</a>
+        </span>
+      </span>
+      <span class="mi">
+        <button type="button" aria-expanded="false">Оснащение <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+        <span class="sub">
+          <a href="#ukladki">Укладки</a>
+          <a href="#apparatura">Аппаратура</a>
+        </span>
+      </span>
+      <span class="mi"><a href="#tury">3D-туры</a></span>
+      <span class="mi"><a href="#project">Проект</a></span>
+      <span class="mi"><a href="#contacts">Контакты</a></span>
     </nav>
     <button class="cta" data-tour="c" type="button">Открыть тур</button>
   </div>
@@ -345,14 +442,14 @@ body.hidden-ui .rail-top,body.hidden-ui .rail-bottom{background:none}
     <button class="cls" data-tour="c" type="button">
       <span class="letter">C</span>
       <h3>Реанимобиль</h3>
-      <div class="sub">Интенсивная терапия</div>
+      <div class="sub" style="position:static;display:block;border:0;padding:0;box-shadow:none;background:none;min-width:0;font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin-top:8px">Интенсивная терапия</div>
       <p>Реанимация и интенсивная терапия на месте и в движении. Расширенный мониторинг, ИВЛ, инфузионная техника, экспресс-диагностика. Увеличенный объём салона: одновременно работают двое-трое специалистов.</p>
       <span class="open">Открыть тур<i></i><svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
     </button>
     <button class="cls" data-tour="b" type="button">
       <span class="letter">B</span>
       <h3>Экстренная помощь</h3>
-      <div class="sub">Основная рабочая единица</div>
+      <div class="sub" style="position:static;display:block;border:0;padding:0;box-shadow:none;background:none;min-width:0;font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin-top:8px">Основная рабочая единица</div>
       <p>Лечебные мероприятия и транспортировка пациента. Мониторинг, дефибрилляция, кислород, укладки по профилю вызова. На этот класс приходится наибольшее число выездов службы.</p>
       <span class="open">Открыть тур<i></i><svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
     </button>
@@ -366,53 +463,106 @@ body.hidden-ui .rail-top,body.hidden-ui .rail-bottom{background:none}
 
 <div class="wrap">
 
+<section id="opisanie">
+  <div class="s-head">
+    <span class="eyebrow">О проекте</span>
+    <h2>Зачем этот тур</h2>
+    <p>Автомобиль скорой помощи обычно видят снаружи. Что внутри и почему устроено именно так — знают только бригады. Тур закрывает этот разрыв: главный врач, специалист по закупкам, проектировщик или студент может изучить салон до того, как окажется в нём, и понять логику размещения каждого прибора.</p>
+  </div>
+  <div class="grid">
+    <div class="box"><span class="n">Кому</span><h4>Руководителям учреждений</h4><p>Сопоставить классы B и C по оснащению и компоновке до решения о закупке.</p></div>
+    <div class="box"><span class="n">Кому</span><h4>Бригадам</h4><p>Разобрать штатное размещение укладок и приборов, в том числе при переходе на другой класс машины.</p></div>
+    <div class="box"><span class="n">Кому</span><h4>Проектировщикам</h4><p>Увидеть требования к эргономике и к телемедицинскому контуру в привязке к конкретным узлам салона.</p></div>
+    <div class="box"><span class="n">Кому</span><h4>Обучению</h4><p>Показать салон группе без вывода машины из смены.</p></div>
+  </div>
+</section>
+
 <section id="salon">
   <div class="s-head">
     <span class="eyebrow">Салон</span>
     <h2>Эргономика рабочего пространства</h2>
     <p>Салон скорой — это рабочее место, где счёт идёт на секунды, а пространство измеряется сантиметрами. Всё, что бригада берёт в руки, должно находиться там, где рука его ищет, и держаться на месте при торможении.</p>
   </div>
-  <div class="grid">
-    <div class="box"><span class="n">Рабочие места</span><h4>Капитанское кресло</h4><p>Поворотное кресло у изголовья с фиксацией положений: доступ к голове и грудной клетке пациента сохраняется в движении.</p></div>
-    <div class="box"><span class="n">Рабочие места</span><h4>Складные боковые кресла</h4><p>Места для второго члена бригады и сопровождающего. Сложенные — освобождают проход к задним дверям.</p></div>
-    <div class="box"><span class="n">Условия</span><h4>Система освещения</h4><p>Рабочий режим для манипуляций, дежурный для транспортировки, отдельная подсветка входной группы. Без бликов на экранах приборов.</p></div>
-    <div class="box"><span class="n">Условия</span><h4>Пневмоподвеска</h4><p>Меньше вибрации при перевозке и возможность опустить кузов при погрузке. Прямо влияет на качество ЭКГ, снятой в движении.</p></div>
-    <div class="box"><span class="n">Хранение</span><h4>Универсальные рейлинги</h4><p>Единый интерфейс крепления: оборудование и укладки переставляются под профиль бригады без переделки салона.</p></div>
-    <div class="box"><span class="n">Хранение</span><h4>Боковые полки и стеллажи</h4><p>Закрывающиеся створки для расходников, открытые полки для того, что нужно мгновенно. Содержимое видно, не разлетается в движении.</p></div>
-    <div class="box"><span class="n">Хранение</span><h4>Ниша для крупногабаритного</h4><p>Щит, вакуумный матрас, кресельные носилки убираются так, чтобы проход оставался свободным.</p></div>
-    <div class="box"><span class="n">Доступ</span><h4>Входная группа</h4><p>Поручни по обеим сторонам проёма, выдвижная подножка, противоскользящее покрытие. Погрузка без ручного подъёма.</p></div>
-  </div>
-</section>
 
-<section id="osnashchenie">
-  <div class="s-head">
-    <span class="eyebrow">Оснащение</span>
-    <h2>Укладки и аппаратура</h2>
-    <p>Укладки собраны по профилю вызова и лежат на штатных местах — это и есть смысл стандартизации: любой фельдшер в любой машине находит нужное там же, где в предыдущей.</p>
-  </div>
+  <div class="sub-h" id="osobennosti"><b>Особенности</b><span class="ln"></span></div>
   <div class="grid">
-    <div class="box"><span class="n">Укладка</span><h4>Акушерская</h4><p>Приём родов вне стационара и первичная помощь новорождённому.</p></div>
-    <div class="box"><span class="n">Укладка</span><h4>Травматологическая</h4><p>Иммобилизация, остановка кровотечения, обезболивание на месте происшествия.</p></div>
-    <div class="box"><span class="n">Укладка</span><h4>Реанимационная педиатрическая</h4><p>Размеры и дозировки для детей — отдельный набор, а не уменьшенный взрослый.</p></div>
-    <div class="box"><span class="n">Укладка</span><h4>Личной профилактики</h4><p>Защита бригады: средства индивидуальной защиты и обработки при контакте с биологическими жидкостями.</p></div>
-    <div class="box"><span class="n">Аппаратура</span><h4>Монитор и дефибриллятор</h4><p>ЭКГ, SpO₂, неинвазивное давление; дефибрилляция в ручном и автоматическом режиме с записью эпизода.</p></div>
-    <div class="box"><span class="n">Аппаратура</span><h4>Транспортный ИВЛ</h4><p>Вентиляция в движении с контролем параметров дыхания, автономным питанием и подключением к бортовому кислороду.</p></div>
-    <div class="box"><span class="n">Аппаратура</span><h4>Кислородная станция</h4><p>Централизованная разводка с точками подключения и контролем остатка на панели.</p></div>
-    <div class="box"><span class="n">Аппаратура</span><h4>Инфузионная техника</h4><p>Шприцевые насосы и инфузоматы на едином креплении: точная дозировка при тряске.</p></div>
+    <div class="box"><span class="n">01</span><h4>Капитанское кресло</h4><p>Поворотное кресло у изголовья с фиксацией положений: доступ к голове и грудной клетке пациента сохраняется в движении, врач пристёгнут.</p></div>
+    <div class="box"><span class="n">02</span><h4>Боковые поворотные складные кресла</h4><p>Места для второго члена бригады и сопровождающего. Сложенные — освобождают проход к задним дверям и место для носилок.</p></div>
+    <div class="box"><span class="n">03</span><h4>Система освещения салона</h4><p>Рабочий режим для манипуляций, дежурный для транспортировки, отдельная подсветка входной группы. Без бликов на экранах приборов.</p></div>
+  </div>
+
+  <div class="sub-h" id="organizaciya"><b>Организация пространства</b><span class="ln"></span></div>
+  <div class="grid">
+    <div class="box"><span class="n">01</span><h4>Размещение щита и кресельных носилок</h4><p>Штатные места вдоль борта: и то и другое достаётся одним движением, не перекрывая доступ к пациенту.</p></div>
+    <div class="box"><span class="n">02</span><h4>Ниша для крупногабаритных изделий</h4><p>Вакуумный матрас, складные носилки, шины убираются так, чтобы проход оставался свободным.</p></div>
+    <div class="box"><span class="n">03</span><h4>Открытые стеллажи</h4><p>Для того, что нужно мгновенно: видно содержимое, рука не ищет защёлку.</p></div>
+    <div class="box"><span class="n">04</span><h4>Боковые полки</h4><p>Закрывающиеся створки для расходников: содержимое видно через окно, но не разлетается в движении.</p></div>
+    <div class="box"><span class="n">05</span><h4>Универсальные рейлинги</h4><p>Единый интерфейс крепления оборудования: конфигурация меняется под профиль бригады без переделки салона.</p></div>
+  </div>
+
+  <div class="sub-h" id="udobstva"><b>Удобства</b><span class="ln"></span></div>
+  <div class="grid">
+    <div class="box"><span class="n">01</span><h4>Увеличенное пространство салона</h4><p>Высота и ширина, при которых у каталки могут работать двое, не мешая друг другу.</p></div>
+    <div class="box"><span class="n">02</span><h4>Поручни на входной группе</h4><p>Опора с обеих сторон проёма при входе и выходе на неровной площадке.</p></div>
+    <div class="box"><span class="n">03</span><h4>Выдвижная подножка</h4><p>Снижает высоту входа при погрузке и посадке сопровождающего, убирается при начале движения.</p></div>
+    <div class="box"><span class="n">04</span><h4>Пневмоподвеска</h4><p>Меньше вибрации при перевозке и возможность опустить кузов при погрузке. Прямо влияет на качество ЭКГ, снятой в движении.</p></div>
+    <div class="box"><span class="n">05</span><h4>Дополнительные удобства</h4><p>Климат в салоне, точки питания для аппаратуры, места для документов и планшета бригады.</p></div>
   </div>
 </section>
 
 <section id="standart">
   <div class="s-head">
     <span class="eyebrow">Стандартизация</span>
-    <h2>Классы B и C</h2>
-    <p>Деление автомобилей скорой помощи на классы A, B и C закреплено ГОСТ Р 33665-2015 <span class="k">факт</span>. Конкретные требования к оснащению сверяются по действующей редакции стандарта и порядку оказания скорой медицинской помощи — в туре они показаны как проектные, а не как утверждённый перечень.</p>
+    <h2>Единая логика салона</h2>
+    <p>Смысл стандартизации простой: фельдшер, пересевший в другую машину, находит нужное там же, где в предыдущей. Деление автомобилей на классы A, B и C закреплено ГОСТ Р 33665-2015 <span class="k">факт</span>; состав укладок сверяется по действующим порядкам оказания помощи — в туре он показан как проектный, а не как утверждённый перечень.</p>
+  </div>
+
+  <div class="sub-h" id="razmeshchenie"><b>Размещение в салоне</b><span class="ln"></span></div>
+  <div class="grid">
+    <div class="box"><span class="n">Принцип</span><h4>По частоте обращения</h4><p>Чем чаще берут — тем ближе к изголовью и на уровне руки сидящего.</p></div>
+    <div class="box"><span class="n">Принцип</span><h4>По профилю вызова</h4><p>Укладки сгруппированы так, чтобы на один повод не собирать предметы из трёх разных мест.</p></div>
+    <div class="box"><span class="n">Принцип</span><h4>Одинаково во всех машинах</h4><p>Штатные места повторяются от автомобиля к автомобилю — это и экономит секунды, и снижает число ошибок.</p></div>
+    <div class="box"><span class="n">Проверка</span><h4>Сверка перед сменой</h4><p>Комплектность укладок, остаток кислорода, заряд аппаратуры, фиксация каталки — по единому списку.</p></div>
+  </div>
+
+  <div class="sub-h" id="ukladka-air"><b>Укладка АиР</b><span class="ln"></span></div>
+  <div class="grid">
+    <div class="box"><span class="n">Назначение</span><h4>Анестезиология и реанимация</h4><p>Набор для расширенного пособия: обеспечение проходимости дыхательных путей, сосудистый доступ, препараты интенсивной терапии.</p></div>
+    <div class="box"><span class="n">Где лежит</span><h4>В зоне доступа врача</h4><p>Штатное место у изголовья: берётся, не вставая с кресла и не разворачиваясь к дверям.</p></div>
+    <div class="box"><span class="n">Класс</span><h4>Профиль реанимобиля</h4><p>Основная укладка класса C, в классе B присутствует в сокращённом составе.</p></div>
+  </div>
+
+  <div class="sub-h" id="ukladka-smp"><b>Укладка СМП</b><span class="ln"></span></div>
+  <div class="grid">
+    <div class="box"><span class="n">Назначение</span><h4>Скорая медицинская помощь</h4><p>Базовый набор выездной бригады: то, с чем идут к пациенту в квартиру или на улицу, не возвращаясь к машине.</p></div>
+    <div class="box"><span class="n">Где лежит</span><h4>У выхода</h4><p>Ближе всего к дверям: её берут первой и выносят чаще остальных.</p></div>
+    <div class="box"><span class="n">Класс</span><h4>Обе машины</h4><p>Одинакова по составу и в классе B, и в классе C — это опора всей стандартизации.</p></div>
+  </div>
+</section>
+
+<section id="ukladki">
+  <div class="s-head">
+    <span class="eyebrow">Оснащение</span>
+    <h2>Укладки</h2>
+    <p>Собраны по профилю вызова и лежат на штатных местах.</p>
   </div>
   <div class="grid">
-    <div class="box"><span class="n">Класс B</span><h4>Автомобиль экстренной медицинской помощи</h4><p>Лечебные мероприятия силами бригады скорой помощи и транспортировка. Компоновка рассчитана на двоих, доступ к пациенту с головного конца и сбоку.</p></div>
-    <div class="box"><span class="n">Класс C</span><h4>Реанимобиль</h4><p>Интенсивная терапия и реанимация. Увеличенный объём, место для двух-трёх специалистов, расширенный мониторинг и дыхательная аппаратура.</p></div>
-    <div class="box"><span class="n">Единое размещение</span><h4>Одинаковая логика салона</h4><p>Штатные места для укладок и приборов повторяются от машины к машине. Бригада, пересевшая в другой автомобиль, не теряет время на поиск.</p></div>
-    <div class="box"><span class="n">Проверка</span><h4>Сверка перед сменой</h4><p>Комплектность укладок, остаток кислорода, заряд аппаратуры, фиксация каталки — по единому списку.</p></div>
+    <div class="box"><span class="n">Набор</span><h4>Акушерский</h4><p>Приём родов вне стационара и первичная помощь новорождённому.</p></div>
+    <div class="box"><span class="n">Набор</span><h4>Травматологический</h4><p>Иммобилизация, остановка кровотечения, обезболивание на месте происшествия.</p></div>
+    <div class="box"><span class="n">Набор</span><h4>Реанимационный педиатрический</h4><p>Размеры и дозировки для детей — отдельный набор, а не уменьшенный взрослый.</p></div>
+    <div class="box"><span class="n">Набор</span><h4>Для личной профилактики</h4><p>Защита бригады: средства индивидуальной защиты и обработки при контакте с биологическими жидкостями.</p></div>
+  </div>
+
+  <div class="sub-h" id="apparatura"><b>Аппаратура</b><span class="ln"></span></div>
+  <div class="grid">
+    <div class="box"><span class="n">Прибор</span><h4>Монитор-дефибриллятор</h4><p>ЭКГ, SpO₂, неинвазивное давление; дефибрилляция в ручном и автоматическом режиме с записью эпизода.</p></div>
+    <div class="box"><span class="n">Прибор</span><h4>Транспортный аппарат ИВЛ</h4><p>Вентиляция в движении с контролем параметров дыхания, автономным питанием и подключением к бортовому кислороду.</p></div>
+    <div class="box"><span class="n">Прибор</span><h4>Кислородная станция</h4><p>Централизованная разводка с точками подключения у рабочих мест и контролем остатка на панели.</p></div>
+    <div class="box"><span class="n">Прибор</span><h4>Инфузионная техника</h4><p>Шприцевые насосы и инфузоматы на едином креплении: точная дозировка при тряске.</p></div>
+    <div class="box"><span class="n">Прибор</span><h4>Аспиратор</h4><p>Санация дыхательных путей; питание от бортовой сети и от собственного аккумулятора.</p></div>
+    <div class="box"><span class="n">Прибор</span><h4>Портативный УЗИ</h4><p>Ультразвук в месте оказания помощи: свободная жидкость, оценка сердца и лёгких, сосудистый доступ.</p></div>
+    <div class="box"><span class="n">Прибор</span><h4>Экспресс-лаборатория</h4><p>Газы крови, электролиты, лактат, маркёры повреждения миокарда — результат за минуты.</p></div>
+    <div class="box"><span class="n">Прибор</span><h4>Телемедицинская станция</h4><p>Видеосвязь с консультантом, карта вызова, управление трансляцией данных с приборов.</p></div>
   </div>
 </section>
 
@@ -423,7 +573,7 @@ body.hidden-ui .rail-top,body.hidden-ui .rail-bottom{background:none}
     <p>Разработка салона автомобиля СМП как автономного лечебно-диагностического комплекса с реализацией телемедицинских технологий. Цель — создание автомобиля, способного оказать помощь и провести диагностику на месте, с дистанционным участием профильного специалиста.</p>
   </div>
 
-  <h3 style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--brass);margin:0 0 18px">Шесть задач</h3>
+  <div class="sub-h"><b>Шесть задач</b><span class="ln"></span></div>
   <div class="rows">
     <div class="row"><b>01</b><span>Исследование существующих моделей автомобилей СМП и их возможностей.</span></div>
     <div class="row"><b>02</b><span>Разработка концепции инновационного салона, включая требования к функциональности и оборудованию.</span></div>
@@ -433,7 +583,7 @@ body.hidden-ui .rail-top,body.hidden-ui .rail-bottom{background:none}
     <div class="row"><b>06</b><span>Оценка эффективности и экономической целесообразности внедрения новой модели.</span></div>
   </div>
 
-  <h3 style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--brass);margin:44px 0 18px">Тринадцать этапов в четырёх фазах</h3>
+  <div class="sub-h"><b>Тринадцать этапов в четырёх фазах</b><span class="ln"></span></div>
   <div class="phase">
     <div class="phase-h"><b>Фаза I · Исследование и требования</b><span class="ln"></span><span class="rg">1–2</span></div>
     <div class="rows">
@@ -468,8 +618,8 @@ body.hidden-ui .rail-top,body.hidden-ui .rail-bottom{background:none}
     </div>
   </div>
 
-  <h3 style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--brass);margin:44px 0 18px">Телемедицинский контур</h3>
-  <p style="margin-bottom:20px;color:var(--ink-2);font-size:15px;max-width:68ch">Путь данных от пациента в салоне до профильного специалиста. Центральное звено — оперативный центр в Грозном. Числовые значения ниже помечены как <span class="k">проектное требование</span>: они закладываются в ТЗ и проверяются на испытаниях, а не измерены.</p>
+  <div class="sub-h"><b>Телемедицинский контур</b><span class="ln"></span></div>
+  <p style="margin-bottom:20px;color:var(--ink-2);font-size:15px;max-width:68ch">Путь данных от пациента в салоне до профильного специалиста. Центральное звено — оперативный центр в Грозном. Числовые значения помечены как <span class="k">проектное требование</span>: они закладываются в ТЗ и проверяются на испытаниях, а не измерены.</p>
   <div class="grid">
     <div class="box"><span class="n">Узел 1</span><h4>Борт АСМП</h4><p>Монитор, ИВЛ, дефибриллятор на единой шине. Бортовой сервер с буфером записи. Две камеры и гарнитура с шумоподавлением.</p></div>
     <div class="box"><span class="n">Узел 2</span><h4>Канал связи</h4><p>Агрегация LTE/5G нескольких операторов, спутниковый резерв для горных районов, приоритет витальных данных над видео.</p></div>
@@ -489,13 +639,69 @@ body.hidden-ui .rail-top,body.hidden-ui .rail-bottom{background:none}
   </div>
 </section>
 
+<section id="smi">
+  <div class="s-head">
+    <span class="eyebrow">О проекте</span>
+    <h2>СМИ о нас</h2>
+    <p>Раздел под публикации о станции и о проекте. Заполняется ссылками на реальные материалы — выдуманных заголовков здесь нет и быть не должно.</p>
+  </div>
+  <div class="media">
+    <a href="https://rssmp.ru/" target="_blank" rel="noopener">
+      <span class="src">rssmp.ru</span>
+      <span class="ttl">Новости станции — официальный раздел</span>
+      <span class="ar">↗</span>
+    </a>
+  </div>
+  <div class="callout" style="margin-top:18px">
+    <b>Как заполнять</b>
+    Каждая строка — источник, заголовок и ссылка на публикацию. Пришлите список материалов, добавлю. Пока раздел содержит единственную честную ссылку — на новости самой станции.
+  </div>
+</section>
+
 <section id="gallery">
   <div class="s-head">
-    <span class="eyebrow">Галерея</span>
-    <h2>Фотографии станции</h2>
-    <p>Нажмите на любую плитку и выберите снимок — он подставится прямо в браузере, локально, никуда не отправляясь. Так можно собрать галерею и посмотреть, как сайт выглядит с настоящими фотографиями, до того как отдавать файлы в работу.</p>
+    <span class="eyebrow">О проекте</span>
+    <h2>Галерея</h2>
+    <p>Нажмите на плитку и выберите снимок — он подставится прямо в браузере, локально, никуда не отправляясь. Так можно собрать галерею и посмотреть, как сайт выглядит с настоящими фотографиями, до того как отдавать файлы в работу. Подписи на плитках — это список того, что нужно снять.</p>
   </div>
   <div class="shots" id="shots"></div>
+</section>
+
+<section id="svyaz">
+  <div class="s-head">
+    <span class="eyebrow">О проекте</span>
+    <h2>Связаться с нами</h2>
+    <p>Форма собирает письмо и открывает его в вашей почтовой программе. Отдельного сервера у страницы нет — при размещении на хостинге станции её подключают к почте или к сервису форм.</p>
+  </div>
+  <form class="form" id="contactForm">
+    <label><span class="lb">Имя</span><input type="text" id="fName" name="name" autocomplete="name" required></label>
+    <label><span class="lb">Телефон или почта</span><input type="text" id="fContact" name="contact" autocomplete="email" required></label>
+    <label class="full"><span class="lb">Тема</span>
+      <select id="fTopic" name="topic">
+        <option>Вопрос по проекту</option>
+        <option>Съёмка панорам и фотографий</option>
+        <option>Оснащение и закупки</option>
+        <option>Сотрудничество</option>
+        <option>Другое</option>
+      </select>
+    </label>
+    <label class="full"><span class="lb">Сообщение</span><textarea id="fMsg" name="message" required></textarea></label>
+    <button class="send full" type="submit">Отправить</button>
+  </form>
+</section>
+
+<section id="partners">
+  <div class="s-head">
+    <span class="eyebrow">Ресурсы</span>
+    <h2>Государственные ресурсы</h2>
+    <p>Ссылки, указанные на официальном сайте станции.</p>
+  </div>
+  <div class="partners">
+    <div><b>Минздрав России</b><span>minzdrav.gov.ru</span></div>
+    <div><b>Минздрав Чеченской Республики</b><span>minzdravchr.ru</span></div>
+    <div><b>Глава и Правительство ЧР</b><span>chechnya.gov.ru</span></div>
+    <div><b>Портал о вашем здоровье</b><span>takzdorovo.ru</span></div>
+  </div>
 </section>
 
 <section id="contacts">
@@ -512,13 +718,13 @@ body.hidden-ui .rail-top,body.hidden-ui .rail-bottom{background:none}
   </div>
   <div class="callout" style="margin-top:20px">
     <b>Перед публикацией</b>
-    Реквизиты взяты с официального сайта станции и приведены как есть — сверьте их перед выкладыванием. Фотография станции и любые другие снимки с rssmp.ru принадлежат станции: их использование на новом ресурсе согласуется отдельно, а кадры с узнаваемыми людьми требуют согласия этих людей. Панорамы для 3D-тура на сайте станции отсутствуют — их нужно снять отдельно.
+    Реквизиты взяты с официального сайта станции и приведены как есть — сверьте их перед выкладыванием. Фотография станции принадлежит станции: использование на новом ресурсе согласуется отдельно, а кадры с узнаваемыми людьми требуют согласия этих людей. Панорамы для 3D-тура на сайте станции отсутствуют — их нужно снять.
   </div>
 </section>
 
 <footer>
   <div>Макет сайта 3D-тура по автомобилям скорой медицинской помощи. Разработан в рамках научно-практического проекта «Разработка инновационного салона автомобиля скорой медицинской помощи как автономного лечебно-диагностического комплекса с реализацией телемедицинских технологий».</div>
-  <div>Сцены тура пока показывают схемы компоновки, построенные кодом страницы. Они заменяются панорамами, снятыми на машинах станции.</div>
+  <div>Структура разделов повторяет логику проекта-образца; тексты, разметка и движок тура написаны заново. Сцены тура пока показывают схемы компоновки, построенные кодом страницы, — они заменяются панорамами, снятыми на машинах станции.</div>
 </footer>
 </div>
 
@@ -917,6 +1123,51 @@ body.hidden-ui .rail-top,body.hidden-ui .rail-bottom{background:none}
 
   var tourReady = false;
   var reduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  // ---------- меню ----------
+  var menu = document.getElementById("menu"), burger = document.getElementById("burger");
+  burger.addEventListener("click", function(){
+    var open = !menu.classList.contains("show");
+    menu.classList.toggle("show", open);
+    burger.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".mi > button"), function(btn){
+    btn.addEventListener("click", function(e){
+      e.stopPropagation();
+      var mi = btn.parentNode, wasOpen = mi.classList.contains("open");
+      Array.prototype.forEach.call(document.querySelectorAll(".mi.open"), function(o){
+        o.classList.remove("open");
+        var b = o.querySelector("button"); if (b) b.setAttribute("aria-expanded","false");
+      });
+      mi.classList.toggle("open", !wasOpen);
+      btn.setAttribute("aria-expanded", wasOpen ? "false" : "true");
+    });
+  });
+  document.addEventListener("click", function(){
+    Array.prototype.forEach.call(document.querySelectorAll(".mi.open"), function(o){
+      o.classList.remove("open");
+      var b = o.querySelector("button"); if (b) b.setAttribute("aria-expanded","false");
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".menu a[href^='#']"), function(a){
+    a.addEventListener("click", function(){
+      menu.classList.remove("show");
+      burger.setAttribute("aria-expanded","false");
+      Array.prototype.forEach.call(document.querySelectorAll(".mi.open"), function(o){ o.classList.remove("open"); });
+    });
+  });
+
+  // ---------- форма обратной связи ----------
+  document.getElementById("contactForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var name = document.getElementById("fName").value.trim();
+    var contact = document.getElementById("fContact").value.trim();
+    var topic = document.getElementById("fTopic").value;
+    var msg = document.getElementById("fMsg").value.trim();
+    var body = "Имя: " + name + "\nКонтакт: " + contact + "\nТема: " + topic + "\n\n" + msg;
+    window.location.href = "mailto:?subject=" + encodeURIComponent("Сайт 3D-тура: " + topic) +
+      "&body=" + encodeURIComponent(body);
+  });
 
   // ---------- счётчики на лендинге ----------
   var nSpots = 0;
