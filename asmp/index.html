@@ -1,39 +1,155 @@
-<title>Виртуальный тур скорой Грозного</title>
+<title>Тур по скорой Грозного</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Один визуальный мир: панорама — фон страницы, обвязка поверх неё.
-   Светлой темы нет намеренно, все цвета заданы явно. */
 :root{
-  --ground:#07090A; --ground-2:#0C0F11;
-  --ink:#F4F1EC; --ink-2:#9BA3A6; --ink-3:#6E7679;
-  --hair:rgba(244,241,236,.13); --hair-2:rgba(244,241,236,.07);
-  --glass:rgba(8,10,11,.70); --glass-2:rgba(7,9,10,.90);
-  --accent:#C4172A; --accent-2:#E0303F;
-  --brass:#C2A265; --teal:#5FBFA0; --amber:#D2A044;
+  --bg:#FAF8F5; --surface:#FFFFFF; --surface-2:#F2EFEA; --surface-3:#E8E3DB;
+  --ink:#16191B; --ink-2:#565F64; --ink-3:#8A9296;
+  --hair:rgba(22,25,27,.13); --hair-2:rgba(22,25,27,.07);
+  --accent:#B3121F; --accent-soft:#FBEDEE;
+  --brass:#9A7B3C; --teal:#0E7A5F; --amber:#8A6210;
   --ease:cubic-bezier(.22,.61,.36,1);
   --display:'Unbounded','Helvetica Neue',Arial,sans-serif;
   --body:'Golos Text','Segoe UI',system-ui,sans-serif;
   --mono:'JetBrains Mono','SF Mono',Consolas,monospace;
 }
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C0E0F; --surface:#14181A; --surface-2:#1A1F21; --surface-3:#232A2D;
+    --ink:#F2F0EC; --ink-2:#9BA3A6; --ink-3:#6E7679;
+    --hair:rgba(242,240,236,.14); --hair-2:rgba(242,240,236,.07);
+    --accent:#E8434E; --accent-soft:#2A1416;
+    --brass:#C2A265; --teal:#4FBE9B; --amber:#D2A044;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C0E0F; --surface:#14181A; --surface-2:#1A1F21; --surface-3:#232A2D;
+  --ink:#F2F0EC; --ink-2:#9BA3A6; --ink-3:#6E7679;
+  --hair:rgba(242,240,236,.14); --hair-2:rgba(242,240,236,.07);
+  --accent:#E8434E; --accent-soft:#2A1416;
+  --brass:#C2A265; --teal:#4FBE9B; --amber:#D2A044;
+}
 *{box-sizing:border-box}
-html,body{height:100%}
-body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6;overflow:hidden;-webkit-font-smoothing:antialiased}
-h1,h2,h3,h4{font-family:var(--display);font-weight:400;margin:0;line-height:1.1;text-wrap:balance}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased}
+body.locked{overflow:hidden}
+h1,h2,h3,h4{font-family:var(--display);font-weight:400;margin:0;line-height:1.12;text-wrap:balance}
 p{margin:0}
+a{color:inherit}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
-a{color:var(--brass)}
-:focus-visible{outline:1px solid var(--brass);outline-offset:3px}
+:focus-visible{outline:1px solid var(--accent);outline-offset:3px}
+img{max-width:100%}
 code{font-family:var(--mono);font-size:.88em;color:var(--brass)}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:24px}
+.eyebrow{font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:18px;height:1px;background:var(--brass);flex:none}
 
-.eyebrow{font-family:var(--mono);font-size:9.5px;font-weight:400;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-3)}
+/* ---------- шапка ---------- */
+.site{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:color-mix(in srgb,var(--bg) 92%,transparent);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--hair-2)}
+.site-in{max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:20px}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.brand .mk{width:30px;height:30px;flex:none;border:1px solid var(--accent);display:grid;place-items:center;
+  font-family:var(--mono);font-size:9px;letter-spacing:.04em;color:var(--accent)}
+.brand b{display:block;font-family:var(--display);font-size:12.5px;font-weight:400;letter-spacing:.02em;line-height:1.3}
+.brand span{display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);margin-top:3px}
+.site nav{margin-left:auto;display:flex;gap:2px}
+.site nav a{font-size:13px;color:var(--ink-2);text-decoration:none;padding:7px 11px;transition:color .3s var(--ease)}
+.site nav a:hover{color:var(--ink)}
+.cta{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;padding:11px 18px;
+  background:var(--accent);color:#fff;white-space:nowrap;transition:opacity .3s var(--ease)}
+.cta:hover{opacity:.88}
+@media (max-width:1000px){.site nav{display:none}}
 
-#app{position:relative;height:100%;width:100%;overflow:hidden;background:var(--ground)}
-#stage{position:absolute;inset:0;touch-action:none;cursor:grab}
-#stage.dragging{cursor:grabbing}
-#stage canvas{display:block;width:100%;height:100%}
-#spots{position:absolute;inset:0;pointer-events:none}
+/* ---------- герой ---------- */
+.hero{padding-block:72px 56px}
+.hero h1{font-size:clamp(31px,5.6vw,62px);font-weight:300;letter-spacing:-.024em;line-height:1.03;margin-top:24px;max-width:17ch}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero .lead{margin-top:28px;font-size:17px;color:var(--ink-2);max-width:60ch;line-height:1.72}
+.hero .facts{margin-top:44px;display:flex;gap:52px;flex-wrap:wrap;padding-top:26px;border-top:1px solid var(--hair)}
+.hero .facts div b{display:block;font-family:var(--display);font-size:30px;font-weight:300;font-variant-numeric:tabular-nums}
+.hero .facts div span{display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin-top:8px}
 
+/* ---------- выбор класса ---------- */
+.choose{padding-block:8px 72px}
+.choose h2{font-size:clamp(20px,2.6vw,27px);font-weight:300;letter-spacing:-.01em;margin:14px 0 26px}
+.classes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.cls{position:relative;background:var(--surface);border:1px solid var(--hair);padding:30px 28px 26px;
+  text-align:left;display:flex;flex-direction:column;min-height:270px;transition:border-color .45s var(--ease),transform .45s var(--ease)}
+.cls:hover{border-color:var(--accent);transform:translateY(-3px)}
+.cls .letter{font-family:var(--display);font-size:66px;font-weight:300;line-height:.9;color:var(--accent)}
+.cls h3{font-size:19px;font-weight:400;margin-top:18px;letter-spacing:-.006em}
+.cls .sub{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin-top:8px}
+.cls p{margin-top:14px;font-size:14px;color:var(--ink-2);line-height:1.66}
+.cls .open{margin-top:auto;padding-top:22px;display:flex;align-items:center;gap:11px;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink)}
+.cls .open svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;transition:transform .45s var(--ease)}
+.cls:hover .open svg{transform:translateX(5px)}
+.cls .open i{flex:1;height:1px;background:var(--hair);font-style:normal}
+.third{margin-top:20px;display:flex;align-items:center;gap:16px;background:var(--surface-2);border:1px solid var(--hair-2);padding:18px 22px;flex-wrap:wrap}
+.third b{font-family:var(--display);font-size:15px;font-weight:400}
+.third span{font-size:13.5px;color:var(--ink-2)}
+.third button{margin-left:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;
+  padding:10px 16px;border:1px solid var(--hair);transition:border-color .4s var(--ease)}
+.third button:hover{border-color:var(--ink-3)}
+
+/* ---------- секции ---------- */
+section{padding-block:60px;border-top:1px solid var(--hair-2)}
+.s-head{margin-bottom:34px}
+.s-head h2{font-size:clamp(22px,3.2vw,34px);font-weight:300;letter-spacing:-.016em;margin-top:16px}
+.s-head p{margin-top:16px;color:var(--ink-2);font-size:15.5px;max-width:66ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(252px,1fr));gap:1px;background:var(--hair-2);border:1px solid var(--hair-2)}
+.box{background:var(--bg);padding:24px 22px}
+.box .n{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--brass);display:block;margin-bottom:13px}
+.box h4{font-size:16px;font-weight:400;letter-spacing:-.006em}
+.box p{margin-top:10px;font-size:13.5px;color:var(--ink-2);line-height:1.66}
+.rows{border-top:1px solid var(--hair)}
+.row{display:grid;grid-template-columns:46px minmax(0,1fr);gap:20px;align-items:baseline;padding:16px 0;
+  border-bottom:1px solid var(--hair-2);font-size:14.5px;color:var(--ink-2);line-height:1.62}
+.row b{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--brass);font-weight:400}
+.phase{margin-bottom:30px}
+.phase-h{display:flex;align-items:center;gap:14px;margin-bottom:4px}
+.phase-h b{font-family:var(--display);font-size:12.5px;font-weight:400;letter-spacing:.06em;color:var(--ink)}
+.phase-h .ln{height:1px;flex:1;background:var(--hair-2)}
+.phase-h .rg{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--ink-3)}
+.k{font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;padding:2px 7px;white-space:nowrap;
+  vertical-align:2px;border:1px solid color-mix(in srgb,var(--teal) 45%,transparent);color:var(--teal)}
+.k.est{border-color:color-mix(in srgb,var(--amber) 45%,transparent);color:var(--amber)}
+
+/* ---------- галерея ---------- */
+.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(218px,1fr));gap:14px}
+.shot{position:relative;display:block;cursor:pointer;background:var(--surface-2);border:1px dashed var(--hair);
+  aspect-ratio:4/3;overflow:hidden;transition:border-color .4s var(--ease)}
+.shot:hover{border-color:var(--accent)}
+.shot.filled{border-style:solid;border-color:var(--hair)}
+.shot .im{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity .5s var(--ease)}
+.shot.filled .im{opacity:1}
+.shot .meta{position:absolute;inset:auto 0 0 0;padding:14px 15px;display:flex;flex-direction:column;gap:5px;
+  background:linear-gradient(to top,color-mix(in srgb,var(--bg) 94%,transparent),transparent)}
+.shot.filled .meta{background:linear-gradient(to top,rgba(10,12,13,.9),transparent);color:#F2F0EC}
+.shot .no{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--brass)}
+.shot .cap{font-size:12.5px;line-height:1.45}
+.shot .hint{position:absolute;left:0;right:0;top:44%;text-align:center;font-family:var(--mono);font-size:9px;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);transition:opacity .4s var(--ease)}
+.shot.filled .hint{opacity:0}
+
+/* ---------- контакты ---------- */
+.contacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(226px,1fr));gap:1px;background:var(--hair-2);border:1px solid var(--hair-2)}
+.contacts div{background:var(--bg);padding:22px}
+.contacts .lb{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3)}
+.contacts .vl{margin-top:10px;font-size:16px;font-family:var(--display);font-weight:300}
+.contacts a{text-decoration:none;border-bottom:1px solid var(--hair)}
+.callout{margin-top:22px;border-left:2px solid var(--accent);background:var(--surface-2);padding:20px 24px;font-size:14px;color:var(--ink-2);line-height:1.7}
+.callout b{color:var(--ink);font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;display:block;margin-bottom:9px}
+footer{padding-block:34px 60px;border-top:1px solid var(--hair);font-size:12.5px;color:var(--ink-3);display:grid;gap:10px;line-height:1.7}
+
+@media (max-width:760px){
+  .wrap{padding-inline:18px}
+  .site-in{padding-inline:18px}
+  .classes{grid-template-columns:1fr}
+  .hero{padding-block:44px 40px}
+  .hero .facts{gap:30px}
+  .brand b{font-size:11.5px}
+}
 /* ---------- точки ---------- */
 .hs{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;display:flex;align-items:center;gap:10px;white-space:nowrap}
 .hs .pin{position:relative;width:30px;height:30px;border-radius:50%;flex:none;display:grid;place-items:center;
@@ -153,64 +269,8 @@ body.hidden-ui .rail-top,body.hidden-ui .rail-bottom{background:none}
 .plan .pt.on circle{fill:var(--accent);stroke:var(--accent-2)}
 .plan .pt text{fill:var(--ink);font-family:'JetBrains Mono',monospace;font-size:9px;text-anchor:middle}
 
-/* ---------- заставка входа ---------- */
-.entry{position:absolute;inset:0;z-index:40;background:rgba(7,9,10,.90);backdrop-filter:blur(22px);
-  display:grid;place-items:center;padding:28px 26px;transition:opacity .7s var(--ease)}
-.entry.out{opacity:0;pointer-events:none}
-.entry[hidden]{display:none}
-.entry-in{max-width:660px;width:100%}
-.entry .rule{width:44px;height:1px;background:var(--brass);margin-bottom:24px}
-.entry .org{font-family:var(--mono);font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--ink-3);line-height:2}
-.entry h1{font-size:clamp(29px,5.6vw,60px);font-weight:300;letter-spacing:-.022em;line-height:1.04;margin-top:20px}
-.entry h1 em{font-style:normal;color:var(--brass)}
-.entry p{margin-top:22px;font-size:15px;color:var(--ink-2);max-width:48ch;line-height:1.7}
-.entry .go{margin-top:34px;display:inline-flex;align-items:center;gap:14px;padding:15px 28px;border:1px solid var(--ink-3);
-  font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink);
-  transition:background .5s var(--ease),border-color .5s var(--ease),color .5s var(--ease)}
-.entry .go svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;transition:transform .5s var(--ease)}
-.entry .go:hover{background:var(--ink);color:var(--ground);border-color:var(--ink)}
-.entry .go:hover svg{transform:translateX(4px)}
-.entry .meta{margin-top:40px;padding-top:20px;border-top:1px solid var(--hair);display:flex;gap:40px;flex-wrap:wrap}
-.entry .meta div b{display:block;font-family:var(--display);font-size:25px;font-weight:300;font-variant-numeric:tabular-nums}
-.entry .meta div span{display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin-top:7px}
-
-/* ---------- панель «О проекте» ---------- */
-.sheet{position:absolute;inset:0;z-index:30;background:var(--ground);overflow-y:auto}
-.sheet[hidden]{display:none}
-.sheet-in{max-width:940px;margin:0 auto;padding:calc(40px + env(safe-area-inset-top,0px)) 26px calc(72px + env(safe-area-inset-bottom,0px))}
-.sheet-head{display:flex;align-items:flex-start;gap:22px;padding-bottom:30px;border-bottom:1px solid var(--hair);margin-bottom:42px}
-.sheet-head h2{font-size:clamp(24px,4.4vw,42px);font-weight:300;letter-spacing:-.018em;margin-top:14px}
-.sheet-head .x{margin-left:auto;flex:none;width:40px;height:40px;border:1px solid var(--hair);display:grid;place-items:center;
-  font-size:19px;line-height:1;color:var(--ink-2);transition:all .4s var(--ease)}
-.sheet-head .x:hover{color:var(--ink);border-color:var(--ink-3)}
-.sheet h3{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.26em;text-transform:uppercase;color:var(--brass);
-  margin:52px 0 20px;display:flex;align-items:center;gap:14px}
-.sheet h3::after{content:"";height:1px;flex:1;background:var(--hair)}
-.sheet h3:first-of-type{margin-top:0}
-.sheet p{color:var(--ink-2);font-size:15px;line-height:1.75;max-width:68ch}
-.rows{display:grid;gap:0;border-top:1px solid var(--hair)}
-.row{display:grid;grid-template-columns:44px minmax(0,1fr);gap:18px;align-items:baseline;
-  padding:15px 0;border-bottom:1px solid var(--hair-2);font-size:14px;color:var(--ink-2);line-height:1.62}
-.row b{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--brass);font-weight:400}
-.phase{margin-bottom:34px}
-.phase-h{display:flex;align-items:center;gap:14px;margin-bottom:6px}
-.phase-h b{font-family:var(--display);font-size:12.5px;font-weight:400;letter-spacing:.07em;color:var(--ink)}
-.phase-h .ln{height:1px;flex:1;background:var(--hair-2)}
-.phase-h .rg{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--ink-3)}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(224px,1fr));gap:1px;background:var(--hair-2);border:1px solid var(--hair-2)}
-.box{background:var(--ground);padding:20px 18px}
-.box .n{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:12px}
-.box h4{font-size:15px;font-weight:400;letter-spacing:-.004em;color:var(--ink)}
-.box p{margin-top:9px;font-size:13px;line-height:1.65}
-.flowline{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--hair-2);border:1px solid var(--hair-2)}
-.flowline .box .n{color:var(--brass)}
-.k{font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;padding:2px 7px;white-space:nowrap;
-  vertical-align:2px;border:1px solid rgba(95,191,160,.4);color:var(--teal)}
-.k.est{border-color:rgba(210,160,68,.4);color:var(--amber)}
-.foot{margin-top:56px;padding-top:24px;border-top:1px solid var(--hair);font-size:12.5px;color:var(--ink-3);display:grid;gap:10px;line-height:1.7}
 
 @media (max-width:1000px){
-  .flowline{grid-template-columns:repeat(2,minmax(0,1fr))}
   .rail-top{flex-wrap:wrap;gap:16px}
   .tabs{margin-left:0;max-width:100%;order:3;flex-basis:100%}
   .top-actions{margin-left:auto}
@@ -226,7 +286,6 @@ body.hidden-ui .rail-top,body.hidden-ui .rail-bottom{background:none}
   .plan{right:18px;bottom:auto;top:calc(150px + env(safe-area-inset-top,0px))}
   .hs .lbl{display:none}
   .entry .meta{gap:26px}
-  .sheet-in{padding-left:18px;padding-right:18px}
 }
 @media (max-width:560px){
   .flowline,.grid{grid-template-columns:1fr}
@@ -234,9 +293,236 @@ body.hidden-ui .rail-top,body.hidden-ui .rail-bottom{background:none}
   .thumb{width:104px}
   .bar button{width:34px;height:34px}
 }
+
+/* ---------- тур: всегда тёмный, собственные токены ---------- */
+#tourOverlay{position:fixed;inset:0;z-index:60;background:#07090A;overflow:hidden;
+  --ground:#07090A; --ink:#F4F1EC; --ink-2:#9BA3A6; --ink-3:#6E7679;
+  --hair:rgba(244,241,236,.13); --hair-2:rgba(244,241,236,.07);
+  --glass:rgba(8,10,11,.70); --glass-2:rgba(7,9,10,.90);
+  --accent:#C4172A; --accent-2:#E0303F; --brass:#C2A265; --teal:#5FBFA0}
+#tourOverlay[hidden]{display:none}
+#stage{position:absolute;inset:0;touch-action:none;cursor:grab}
+#stage.dragging{cursor:grabbing}
+#stage canvas{display:block;width:100%;height:100%}
+#spots{position:absolute;inset:0;pointer-events:none}
 </style>
 
-<div id="app">
+<header class="site">
+  <div class="site-in">
+    <span class="brand">
+      <span class="mk">103</span>
+      <span><b>Республиканская станция<br>скорой медицинской помощи</b><span>Чеченская Республика · Грозный</span></span>
+    </span>
+    <nav>
+      <a href="#tury">3D-туры</a><a href="#salon">Салон</a><a href="#osnashchenie">Оснащение</a>
+      <a href="#standart">Стандартизация</a><a href="#project">Проект</a><a href="#gallery">Галерея</a><a href="#contacts">Контакты</a>
+    </nav>
+    <button class="cta" data-tour="c" type="button">Открыть тур</button>
+  </div>
+</header>
+
+<div class="wrap hero">
+  <span class="eyebrow">Виртуальный тур · классы B и C</span>
+  <h1>Салон скорой помощи — <em>изнутри</em></h1>
+  <p class="lead">Посмотрите машину так, будто стоите в ней: поворачивайте обзор, приближайте, открывайте отмеченные узлы. Тур показывает не только вид салона, но и назначение каждого элемента — где стоит монитор, куда уходят данные, как устроена погрузка.</p>
+  <div class="facts">
+    <div><b>2</b><span>класса автомобилей</span></div>
+    <div><b id="mScenes">7</b><span>сцен тура</span></div>
+    <div><b id="mSpots">—</b><span>отмеченных узлов</span></div>
+    <div><b>103</b><span>единый номер вызова</span></div>
+  </div>
+</div>
+
+<figure style="margin:0;max-width:1180px;margin-inline:auto;padding-inline:24px">
+  <img src="img/stanciya-park.jpg" alt="Здание Республиканской станции скорой медицинской помощи в Грозном, автопарк и бригады" style="display:block;width:100%;height:auto;border:1px solid var(--hair)">
+  <figcaption style="margin-top:12px;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)">Республиканская станция скорой медицинской помощи · фото с официального сайта rssmp.ru</figcaption>
+</figure>
+
+<div class="wrap choose" id="tury">
+  <span class="eyebrow">Выбор тура</span>
+  <h2>Выберите класс автомобиля</h2>
+  <div class="classes">
+    <button class="cls" data-tour="c" type="button">
+      <span class="letter">C</span>
+      <h3>Реанимобиль</h3>
+      <div class="sub">Интенсивная терапия</div>
+      <p>Реанимация и интенсивная терапия на месте и в движении. Расширенный мониторинг, ИВЛ, инфузионная техника, экспресс-диагностика. Увеличенный объём салона: одновременно работают двое-трое специалистов.</p>
+      <span class="open">Открыть тур<i></i><svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
+    </button>
+    <button class="cls" data-tour="b" type="button">
+      <span class="letter">B</span>
+      <h3>Экстренная помощь</h3>
+      <div class="sub">Основная рабочая единица</div>
+      <p>Лечебные мероприятия и транспортировка пациента. Мониторинг, дефибрилляция, кислород, укладки по профилю вызова. На этот класс приходится наибольшее число выездов службы.</p>
+      <span class="open">Открыть тур<i></i><svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
+    </button>
+  </div>
+  <div class="third">
+    <b>Оперативный центр</b>
+    <span>Зал приёма вызовов 103, пульт врача-консультанта, узел связи с бригадами.</span>
+    <button data-tour="center" type="button">Открыть</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<section id="salon">
+  <div class="s-head">
+    <span class="eyebrow">Салон</span>
+    <h2>Эргономика рабочего пространства</h2>
+    <p>Салон скорой — это рабочее место, где счёт идёт на секунды, а пространство измеряется сантиметрами. Всё, что бригада берёт в руки, должно находиться там, где рука его ищет, и держаться на месте при торможении.</p>
+  </div>
+  <div class="grid">
+    <div class="box"><span class="n">Рабочие места</span><h4>Капитанское кресло</h4><p>Поворотное кресло у изголовья с фиксацией положений: доступ к голове и грудной клетке пациента сохраняется в движении.</p></div>
+    <div class="box"><span class="n">Рабочие места</span><h4>Складные боковые кресла</h4><p>Места для второго члена бригады и сопровождающего. Сложенные — освобождают проход к задним дверям.</p></div>
+    <div class="box"><span class="n">Условия</span><h4>Система освещения</h4><p>Рабочий режим для манипуляций, дежурный для транспортировки, отдельная подсветка входной группы. Без бликов на экранах приборов.</p></div>
+    <div class="box"><span class="n">Условия</span><h4>Пневмоподвеска</h4><p>Меньше вибрации при перевозке и возможность опустить кузов при погрузке. Прямо влияет на качество ЭКГ, снятой в движении.</p></div>
+    <div class="box"><span class="n">Хранение</span><h4>Универсальные рейлинги</h4><p>Единый интерфейс крепления: оборудование и укладки переставляются под профиль бригады без переделки салона.</p></div>
+    <div class="box"><span class="n">Хранение</span><h4>Боковые полки и стеллажи</h4><p>Закрывающиеся створки для расходников, открытые полки для того, что нужно мгновенно. Содержимое видно, не разлетается в движении.</p></div>
+    <div class="box"><span class="n">Хранение</span><h4>Ниша для крупногабаритного</h4><p>Щит, вакуумный матрас, кресельные носилки убираются так, чтобы проход оставался свободным.</p></div>
+    <div class="box"><span class="n">Доступ</span><h4>Входная группа</h4><p>Поручни по обеим сторонам проёма, выдвижная подножка, противоскользящее покрытие. Погрузка без ручного подъёма.</p></div>
+  </div>
+</section>
+
+<section id="osnashchenie">
+  <div class="s-head">
+    <span class="eyebrow">Оснащение</span>
+    <h2>Укладки и аппаратура</h2>
+    <p>Укладки собраны по профилю вызова и лежат на штатных местах — это и есть смысл стандартизации: любой фельдшер в любой машине находит нужное там же, где в предыдущей.</p>
+  </div>
+  <div class="grid">
+    <div class="box"><span class="n">Укладка</span><h4>Акушерская</h4><p>Приём родов вне стационара и первичная помощь новорождённому.</p></div>
+    <div class="box"><span class="n">Укладка</span><h4>Травматологическая</h4><p>Иммобилизация, остановка кровотечения, обезболивание на месте происшествия.</p></div>
+    <div class="box"><span class="n">Укладка</span><h4>Реанимационная педиатрическая</h4><p>Размеры и дозировки для детей — отдельный набор, а не уменьшенный взрослый.</p></div>
+    <div class="box"><span class="n">Укладка</span><h4>Личной профилактики</h4><p>Защита бригады: средства индивидуальной защиты и обработки при контакте с биологическими жидкостями.</p></div>
+    <div class="box"><span class="n">Аппаратура</span><h4>Монитор и дефибриллятор</h4><p>ЭКГ, SpO₂, неинвазивное давление; дефибрилляция в ручном и автоматическом режиме с записью эпизода.</p></div>
+    <div class="box"><span class="n">Аппаратура</span><h4>Транспортный ИВЛ</h4><p>Вентиляция в движении с контролем параметров дыхания, автономным питанием и подключением к бортовому кислороду.</p></div>
+    <div class="box"><span class="n">Аппаратура</span><h4>Кислородная станция</h4><p>Централизованная разводка с точками подключения и контролем остатка на панели.</p></div>
+    <div class="box"><span class="n">Аппаратура</span><h4>Инфузионная техника</h4><p>Шприцевые насосы и инфузоматы на едином креплении: точная дозировка при тряске.</p></div>
+  </div>
+</section>
+
+<section id="standart">
+  <div class="s-head">
+    <span class="eyebrow">Стандартизация</span>
+    <h2>Классы B и C</h2>
+    <p>Деление автомобилей скорой помощи на классы A, B и C закреплено ГОСТ Р 33665-2015 <span class="k">факт</span>. Конкретные требования к оснащению сверяются по действующей редакции стандарта и порядку оказания скорой медицинской помощи — в туре они показаны как проектные, а не как утверждённый перечень.</p>
+  </div>
+  <div class="grid">
+    <div class="box"><span class="n">Класс B</span><h4>Автомобиль экстренной медицинской помощи</h4><p>Лечебные мероприятия силами бригады скорой помощи и транспортировка. Компоновка рассчитана на двоих, доступ к пациенту с головного конца и сбоку.</p></div>
+    <div class="box"><span class="n">Класс C</span><h4>Реанимобиль</h4><p>Интенсивная терапия и реанимация. Увеличенный объём, место для двух-трёх специалистов, расширенный мониторинг и дыхательная аппаратура.</p></div>
+    <div class="box"><span class="n">Единое размещение</span><h4>Одинаковая логика салона</h4><p>Штатные места для укладок и приборов повторяются от машины к машине. Бригада, пересевшая в другой автомобиль, не теряет время на поиск.</p></div>
+    <div class="box"><span class="n">Проверка</span><h4>Сверка перед сменой</h4><p>Комплектность укладок, остаток кислорода, заряд аппаратуры, фиксация каталки — по единому списку.</p></div>
+  </div>
+</section>
+
+<section id="project">
+  <div class="s-head">
+    <span class="eyebrow">Научно-практический проект</span>
+    <h2>Инновационный салон с телемедициной</h2>
+    <p>Разработка салона автомобиля СМП как автономного лечебно-диагностического комплекса с реализацией телемедицинских технологий. Цель — создание автомобиля, способного оказать помощь и провести диагностику на месте, с дистанционным участием профильного специалиста.</p>
+  </div>
+
+  <h3 style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--brass);margin:0 0 18px">Шесть задач</h3>
+  <div class="rows">
+    <div class="row"><b>01</b><span>Исследование существующих моделей автомобилей СМП и их возможностей.</span></div>
+    <div class="row"><b>02</b><span>Разработка концепции инновационного салона, включая требования к функциональности и оборудованию.</span></div>
+    <div class="row"><b>03</b><span>Проектирование и создание автономного лечебно-диагностического комплекса внутри автомобиля.</span></div>
+    <div class="row"><b>04</b><span>Интеграция телемедицинских технологий для дистанционного мониторинга и консультаций со специалистами.</span></div>
+    <div class="row"><b>05</b><span>Тестирование и оптимизация разработанной системы на практике.</span></div>
+    <div class="row"><b>06</b><span>Оценка эффективности и экономической целесообразности внедрения новой модели.</span></div>
+  </div>
+
+  <h3 style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--brass);margin:44px 0 18px">Тринадцать этапов в четырёх фазах</h3>
+  <div class="phase">
+    <div class="phase-h"><b>Фаза I · Исследование и требования</b><span class="ln"></span><span class="rg">1–2</span></div>
+    <div class="rows">
+      <div class="row"><b>01</b><span>Анализ рынка существующих автомобилей СМП и выявление возможностей для улучшения функционала.</span></div>
+      <div class="row"><b>02</b><span>Сбор и анализ требований от медицинских специалистов и руководителей учреждений.</span></div>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-h"><b>Фаза II · Проектирование и прототип</b><span class="ln"></span><span class="rg">3–5</span></div>
+    <div class="rows">
+      <div class="row"><b>03</b><span>Разработка прототипа салона с использованием современных материалов и технологий.</span></div>
+      <div class="row"><b>04</b><span>Создание лечебно-диагностического комплекса: выбор и интеграция медицинского оборудования.</span></div>
+      <div class="row"><b>05</b><span>Разработка программного обеспечения телемедицины и его интеграция в систему автомобиля.</span></div>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-h"><b>Фаза III · Испытания и пилот</b><span class="ln"></span><span class="rg">6–8</span></div>
+    <div class="rows">
+      <div class="row"><b>06</b><span>Тесты и оптимизация прототипа по результатам и отзывам медицинских специалистов.</span></div>
+      <div class="row"><b>07</b><span>Пилотные проекты по внедрению в медицинских учреждениях для оценки эффективности.</span></div>
+      <div class="row"><b>08</b><span>Анализ результатов пилотов и внесение корректировок в конструкцию и функционал.</span></div>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-h"><b>Фаза IV · Сертификация и масштабирование</b><span class="ln"></span><span class="rg">9–13</span></div>
+    <div class="rows">
+      <div class="row"><b>09</b><span>Подготовка документации и сертификации для допуска к использованию в медицинской практике.</span></div>
+      <div class="row"><b>10</b><span>Разработка плана масштабирования и продвижения новой модели.</span></div>
+      <div class="row"><b>11</b><span>Реализация плана: договоры с учреждениями, сервисная поддержка, обучение персонала.</span></div>
+      <div class="row"><b>12</b><span>Мониторинг эксплуатации, сбор обратной связи и внесение изменений.</span></div>
+      <div class="row"><b>13</b><span>Развитие и совершенствование автомобиля для постоянного улучшения эффективности.</span></div>
+    </div>
+  </div>
+
+  <h3 style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--brass);margin:44px 0 18px">Телемедицинский контур</h3>
+  <p style="margin-bottom:20px;color:var(--ink-2);font-size:15px;max-width:68ch">Путь данных от пациента в салоне до профильного специалиста. Центральное звено — оперативный центр в Грозном. Числовые значения ниже помечены как <span class="k">проектное требование</span>: они закладываются в ТЗ и проверяются на испытаниях, а не измерены.</p>
+  <div class="grid">
+    <div class="box"><span class="n">Узел 1</span><h4>Борт АСМП</h4><p>Монитор, ИВЛ, дефибриллятор на единой шине. Бортовой сервер с буфером записи. Две камеры и гарнитура с шумоподавлением.</p></div>
+    <div class="box"><span class="n">Узел 2</span><h4>Канал связи</h4><p>Агрегация LTE/5G нескольких операторов, спутниковый резерв для горных районов, приоритет витальных данных над видео.</p></div>
+    <div class="box"><span class="n">Узел 3 · Грозный</span><h4>Оперативный центр</h4><p>Приём вызовов 103, пульт врача-консультанта, автоподъём карты вызова, маршрутизация к профильному специалисту.</p></div>
+    <div class="box"><span class="n">Узел 4</span><h4>Стационар</h4><p>Предуведомление приёмного отделения, подготовка операционной, передача в МИС, обратная связь об исходе.</p></div>
+  </div>
+  <div class="grid" style="margin-top:14px">
+    <div class="box"><span class="n">Задержка витальных данных</span><h4>≤ 2 с</h4><p>От снятия показателя до отображения на пульте консультанта. <span class="k">требование</span></p></div>
+    <div class="box"><span class="n">Видеоканал</span><h4>720p · 25 к/с</h4><p>Минимум для оценки состояния и контроля манипуляции. <span class="k">требование</span></p></div>
+    <div class="box"><span class="n">Работа без связи</span><h4>Полный цикл</h4><p>Помощь идёт автономно, данные догружаются при восстановлении канала. <span class="k">требование</span></p></div>
+    <div class="box"><span class="n">Автономность питания</span><h4>Расчётная</h4><p>Определяется на этапе 04, проверяется на этапе 06. <span class="k est">допущение</span></p></div>
+  </div>
+
+  <div class="callout">
+    <b>География применения</b>
+    Равнинная часть республики — Грозный, Гудермес, Урус-Мартан, Шали — покрыта сетью подстанций, связь устойчива. Горные южные районы — Веденский, Шатойский, Итум-Калинский, Шаройский, Ножай-Юртовский — дают длинное плечо доставки и прерывистое покрытие. Телемедицинский контур строится прежде всего ради второй группы: консультация специалиста приходит на место раньше, чем автомобиль довезёт пациента.
+  </div>
+</section>
+
+<section id="gallery">
+  <div class="s-head">
+    <span class="eyebrow">Галерея</span>
+    <h2>Фотографии станции</h2>
+    <p>Нажмите на любую плитку и выберите снимок — он подставится прямо в браузере, локально, никуда не отправляясь. Так можно собрать галерею и посмотреть, как сайт выглядит с настоящими фотографиями, до того как отдавать файлы в работу.</p>
+  </div>
+  <div class="shots" id="shots"></div>
+</section>
+
+<section id="contacts">
+  <div class="s-head">
+    <span class="eyebrow">Контакты</span>
+    <h2>Республиканская станция скорой медицинской помощи</h2>
+  </div>
+  <div class="contacts">
+    <div><div class="lb">Вызов скорой помощи</div><div class="vl">103</div></div>
+    <div><div class="lb">Адрес</div><div class="vl">г. Грозный,<br>ул. Лермонтова, 1</div></div>
+    <div><div class="lb">Регистратура</div><div class="vl"><a href="tel:+78712222124">+7 (8712) 22-21-24</a></div></div>
+    <div><div class="lb">Телефон доверия</div><div class="vl"><a href="tel:+79389930100">+7 (938) 993-01-00</a></div></div>
+    <div><div class="lb">Официальный сайт</div><div class="vl"><a href="https://rssmp.ru/" target="_blank" rel="noopener">rssmp.ru</a></div></div>
+  </div>
+  <div class="callout" style="margin-top:20px">
+    <b>Перед публикацией</b>
+    Реквизиты взяты с официального сайта станции и приведены как есть — сверьте их перед выкладыванием. Фотография станции и любые другие снимки с rssmp.ru принадлежат станции: их использование на новом ресурсе согласуется отдельно, а кадры с узнаваемыми людьми требуют согласия этих людей. Панорамы для 3D-тура на сайте станции отсутствуют — их нужно снять отдельно.
+  </div>
+</section>
+
+<footer>
+  <div>Макет сайта 3D-тура по автомобилям скорой медицинской помощи. Разработан в рамках научно-практического проекта «Разработка инновационного салона автомобиля скорой медицинской помощи как автономного лечебно-диагностического комплекса с реализацией телемедицинских технологий».</div>
+  <div>Сцены тура пока показывают схемы компоновки, построенные кодом страницы. Они заменяются панорамами, снятыми на машинах станции.</div>
+</footer>
+</div>
+
+<div id="tourOverlay" hidden>
   <div id="stage"><div id="spots"></div></div>
 
   <div class="rail-top">
@@ -281,125 +567,8 @@ body.hidden-ui .rail-top,body.hidden-ui .rail-bottom{background:none}
     <div id="planSvg"></div>
   </div>
 
-  <div class="entry" id="entry">
-    <div class="entry-in">
-      <div class="rule"></div>
-      <div class="org">Центральная станция скорой медицинской помощи<br>Чеченская Республика · г. Грозный</div>
-      <h1>Виртуальный тур<br>по автомобилям <em>СМП</em></h1>
-      <p>Салон и экстерьер реанимобиля класса C, автомобиля экстренной помощи класса B и оперативный центр. Поворачивайте, приближайте, открывайте узлы — тур показывает не только вид, но и назначение каждого элемента салона.</p>
-      <button class="go" id="entryStart" type="button">Начать тур
-        <svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
-      </button>
-      <div class="meta">
-        <div><b id="mTours">3</b><span>тура</span></div>
-        <div><b id="mScenes">7</b><span>сцен</span></div>
-        <div><b id="mSpots">—</b><span>отмеченных узлов</span></div>
-        <div><b>B / C</b><span>классы по ГОСТ Р 33665</span></div>
-      </div>
-    </div>
+    <button class="tbtn" id="btnClose" type="button" style="position:absolute;right:26px;bottom:calc(88px + env(safe-area-inset-bottom,0px));z-index:25">Закрыть тур</button>
   </div>
-
-  <div class="sheet" id="sheet" hidden>
-    <div class="sheet-in">
-      <div class="sheet-head">
-        <div>
-          <div class="org" style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)">Научно-практический проект</div>
-          <h2 style="margin-top:7px">Инновационный салон автомобиля СМП</h2>
-        </div>
-        <button class="x" id="sheetClose" type="button" aria-label="Закрыть">×</button>
-      </div>
-
-      <h3>Цель проекта</h3>
-      <p>Создание современного и эффективного автомобиля скорой медицинской помощи, способного предоставить медицинскую помощь и диагностику на месте с использованием телемедицинских технологий. Заказчик — центральная станция скорой медицинской помощи г. Грозного.</p>
-
-      <h3>Основные задачи</h3>
-      <div class="rows">
-        <div class="row"><b>01</b><span>Исследование существующих моделей автомобилей СМП и их возможностей.</span></div>
-        <div class="row"><b>02</b><span>Разработка концепции инновационного салона автомобиля СМП, включая определение требований к функциональности и оборудованию.</span></div>
-        <div class="row"><b>03</b><span>Проектирование и создание автономного лечебно-диагностического комплекса внутри автомобиля.</span></div>
-        <div class="row"><b>04</b><span>Интеграция телемедицинских технологий для дистанционного мониторинга и консультаций с врачами-специалистами.</span></div>
-        <div class="row"><b>05</b><span>Тестирование и оптимизация разработанной системы на практике.</span></div>
-        <div class="row"><b>06</b><span>Оценка эффективности и экономической целесообразности внедрения новой модели автомобиля СМП в медицинские учреждения.</span></div>
-      </div>
-
-      <h3>Этапы реализации</h3>
-      <div class="phase">
-        <div class="phase-h"><b>Фаза I · Исследование и требования</b><span class="ln"></span><span class="rg">1–2</span></div>
-        <div class="rows">
-          <div class="row"><b>01</b><span>Проведение анализа рынка существующих автомобилей СМП и выявление возможностей для улучшения их функционала.</span></div>
-          <div class="row"><b>02</b><span>Сбор и анализ требований к новому автомобилю от медицинских специалистов и руководителей медицинских учреждений.</span></div>
-        </div>
-      </div>
-      <div class="phase">
-        <div class="phase-h"><b>Фаза II · Проектирование и прототип</b><span class="ln"></span><span class="rg">3–5</span></div>
-        <div class="rows">
-          <div class="row"><b>03</b><span>Разработка прототипа инновационного салона автомобиля СМП с использованием современных материалов и технологий.</span></div>
-          <div class="row"><b>04</b><span>Создание автономного лечебно-диагностического комплекса, включая выбор и интеграцию необходимого медицинского оборудования.</span></div>
-          <div class="row"><b>05</b><span>Разработка программного обеспечения для управления телемедицинскими технологиями и их интеграция в систему автомобиля СМП.</span></div>
-        </div>
-      </div>
-      <div class="phase">
-        <div class="phase-h"><b>Фаза III · Испытания и пилот</b><span class="ln"></span><span class="rg">6–8</span></div>
-        <div class="rows">
-          <div class="row"><b>06</b><span>Проведение тестов и оптимизация прототипа автомобиля СМП на основе полученных результатов и отзывов медицинских специалистов.</span></div>
-          <div class="row"><b>07</b><span>Организация пилотных проектов по внедрению разработанного автомобиля СМП в медицинских учреждениях с целью оценки его эффективности и выявления возможных проблем.</span></div>
-          <div class="row"><b>08</b><span>Анализ результатов пилотных проектов и внесение корректировок в конструкцию и функционал автомобиля.</span></div>
-        </div>
-      </div>
-      <div class="phase">
-        <div class="phase-h"><b>Фаза IV · Сертификация и масштабирование</b><span class="ln"></span><span class="rg">9–13</span></div>
-        <div class="rows">
-          <div class="row"><b>09</b><span>Подготовка документации и сертификации автомобиля для его допуска к использованию в медицинской практике.</span></div>
-          <div class="row"><b>10</b><span>Разработка плана масштабирования и продвижения новой модели автомобиля СМП на рынке медицинских услуг.</span></div>
-          <div class="row"><b>11</b><span>Реализация плана масштабирования и продвижения, включая заключение договоров с медицинскими учреждениями, организацию сервисной поддержки и обучение персонала.</span></div>
-          <div class="row"><b>12</b><span>Мониторинг и анализ результатов эксплуатации автомобиля СМП, сбор обратной связи от пользователей и внесение необходимых изменений в конструкцию и функционал автомобиля.</span></div>
-          <div class="row"><b>13</b><span>Развитие и совершенствование автомобиля СМП с целью постоянного улучшения его эффективности и удовлетворения потребностей медицинского сообщества.</span></div>
-        </div>
-      </div>
-
-      <h3>Телемедицинский контур</h3>
-      <p style="margin-bottom:12px">Путь данных от пациента в салоне до профильного специалиста. Центральное звено — оперативный центр в Грозном. Числовые значения помечены как <span class="k">проектное требование</span>: они закладываются в ТЗ и проверяются на испытаниях, а не измерены.</p>
-      <div class="flowline">
-        <div class="box"><span class="n">Узел 1</span><h4>Борт АСМП</h4><p>Монитор, ИВЛ, дефибриллятор на единой шине. Бортовой сервер с буфером записи. Две камеры и гарнитура.</p></div>
-        <div class="box"><span class="n">Узел 2</span><h4>Канал связи</h4><p>Агрегация LTE/5G нескольких операторов, спутниковый резерв для горных районов, приоритет витальных данных над видео.</p></div>
-        <div class="box"><span class="n">Узел 3 · Грозный</span><h4>Оперативный центр</h4><p>Приём вызовов 103, пульт консультанта, автоподъём карты вызова, маршрутизация к профильному специалисту.</p></div>
-        <div class="box"><span class="n">Узел 4</span><h4>Стационар</h4><p>Предуведомление приёмного отделения, подготовка операционной, передача в МИС, обратная связь об исходе.</p></div>
-      </div>
-      <div class="grid" style="margin-top:10px">
-        <div class="box"><span class="n">Задержка витальных данных</span><h4>≤ 2 с</h4><p>От снятия показателя до отображения на пульте консультанта. <span class="k">требование</span></p></div>
-        <div class="box"><span class="n">Видеоканал</span><h4>720p · 25 к/с</h4><p>Минимум для оценки состояния и контроля манипуляции. <span class="k">требование</span></p></div>
-        <div class="box"><span class="n">Работа без связи</span><h4>Полный цикл</h4><p>Помощь идёт автономно, данные догружаются при восстановлении канала. <span class="k">требование</span></p></div>
-        <div class="box"><span class="n">Автономность питания</span><h4>Расчётная</h4><p>Определяется на этапе 04, проверяется на этапе 06. <span class="k est">допущение</span></p></div>
-      </div>
-
-      <h3>География применения</h3>
-      <p>Равнинная часть республики — Грозный, Гудермес, Урус-Мартан, Шали — покрыта сетью подстанций, связь устойчива. Горные южные районы — Веденский, Шатойский, Итум-Калинский, Шаройский, Ножай-Юртовский — дают длинное плечо доставки и прерывистое покрытие. Телемедицинский контур строится прежде всего ради второй группы: консультация специалиста приходит на место раньше, чем автомобиль довезёт пациента.</p>
-
-      <h3>Преимущества решения</h3>
-      <p style="margin-bottom:12px">Десять заявленных эффектов. Каждый подлежит проверке на этапах 06–08 и количественной оценке в задаче 06 — до этого они остаются проектными ожиданиями, а не результатами.</p>
-      <div class="grid">
-        <div class="box"><span class="n">Скорость</span><h4>Диагностика на месте</h4><p>Ускорение диагностики и оказания первичной помощи на месте.</p></div>
-        <div class="box"><span class="n">Объём помощи</span><h4>Процедуры в салоне</h4><p>Лечебные процедуры и манипуляции непосредственно в автомобиле.</p></div>
-        <div class="box"><span class="n">Связь</span><h4>Удалённый контроль</h4><p>Дистанционный мониторинг состояния и консультации со специалистами.</p></div>
-        <div class="box"><span class="n">Оснащение</span><h4>Качество помощи</h4><p>Улучшение качества за счёт современного оборудования и технологий.</p></div>
-        <div class="box"><span class="n">Автономность</span><h4>Экономия ресурсов</h4><p>Экономия времени и ресурсов за счёт автономного комплекса.</p></div>
-        <div class="box"><span class="n">География</span><h4>Горные районы</h4><p>Работа там, где нет стационаров или они не оснащены.</p></div>
-        <div class="box"><span class="n">Безопасность</span><h4>Пациент и бригада</h4><p>Повышение безопасности за счёт современных систем мониторинга.</p></div>
-        <div class="box"><span class="n">Маршрутизация</span><h4>Разгрузка стационаров</h4><p>Снижение нагрузки за счёт диагностики и помощи на месте.</p></div>
-        <div class="box"><span class="n">Мобильность</span><h4>Оперативность СМП</h4><p>Рост мобильности службы и эффективности здравоохранения.</p></div>
-        <div class="box"><span class="n">Данные</span><h4>База для исследований</h4><p>Сбор и анализ данных о состоянии пациентов и результатах лечения.</p></div>
-      </div>
-
-      <h3>О туре</h3>
-      <p>Сейчас в сценах показаны схемы компоновки, построенные кодом страницы. Они заменяются вашими панорамами: кнопка загрузки подставляет равнопромежуточный снимок 2:1 в открытую сцену прямо в браузере, локально, ничего не отправляя на сервер. Разбор исходного тура и порядок замены — в файлах <code>ANALIZ-TURA.md</code> и <code>README.md</code> рядом со страницей.</p>
-
-      <div class="foot">
-        <div>Идея тура взята с опубликованного проекта <a href="https://mos03project.ru/salon/" target="_blank" rel="noopener">ССиНМП им. А. С. Пучкова</a>. Тот тур собран на лицензируемом плеере krpano, его панорамы принадлежат правообладателю и сняты с выставочных машин — поэтому копия файлов не делалась. Разметка, стили и движок написаны заново, панорамы подставляются свои.</div>
-        <div>Точные наименования организации, номера подстанций и реквизиты подставляются перед публикацией — в макете они оставлены обобщёнными.</div>
-      </div>
-    </div>
-  </div>
-</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
@@ -746,6 +915,84 @@ body.hidden-ui .rail-top,body.hidden-ui .rail-bottom{background:none}
   var SCENES = [];
   TOURS.forEach(function(t){ t.scenes.forEach(function(s){ s.tour = t; SCENES.push(s); }); });
 
+  var tourReady = false;
+  var reduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  // ---------- счётчики на лендинге ----------
+  var nSpots = 0;
+  SCENES.forEach(function(sc){ sc.spots.forEach(function(p){ if (!p.to) nSpots++; }); });
+  document.getElementById("mScenes").textContent = SCENES.length;
+  document.getElementById("mSpots").textContent = nSpots;
+
+  // ---------- открытие и закрытие тура ----------
+  var overlay = document.getElementById("tourOverlay");
+  var scrollY = 0;
+
+  function openTour(tourId){
+    var t = null;
+    for (var i = 0; i < TOURS.length; i++) if (TOURS[i].id === tourId) t = TOURS[i];
+    if (!t) t = TOURS[0];
+    scrollY = window.scrollY;
+    overlay.hidden = false;
+    document.body.classList.add("locked");
+    if (tourReady){ loadScene(t.scenes[0].id); resize(); setSpin(!reduce); }
+    document.getElementById("btnClose").focus();
+  }
+  function closeTour(){
+    overlay.hidden = true;
+    document.body.classList.remove("locked");
+    if (tourReady) setSpin(false);
+    window.scrollTo(0, scrollY);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-tour]"), function(el){
+    if (el.classList.contains("tab")) return;
+    el.addEventListener("click", function(){ openTour(el.getAttribute("data-tour")); });
+  });
+  document.getElementById("btnClose").addEventListener("click", closeTour);
+  document.getElementById("btnAbout").addEventListener("click", function(){
+    closeTour();
+    var el = document.getElementById("project");
+    if (el) el.scrollIntoView({behavior: reduce ? "auto" : "smooth", block:"start"});
+  });
+
+  // ---------- галерея: подстановка своих снимков ----------
+  var SHOTS = [
+    "Автомобиль класса C, вид три четверти спереди",
+    "Салон класса C, общий план от изголовья каталки",
+    "Рабочее место врача: монитор, ИВЛ, рейлинги",
+    "Задние двери, погрузочная зона",
+    "Автомобиль класса B, вид три четверти спереди",
+    "Салон класса B, общий план",
+    "Укладки на рейлингах, маркировка",
+    "Оперативный центр: зал приёма вызовов",
+    "Фасад станции и площадка автопарка",
+    "Бригада у автомобиля — только с согласия"
+  ];
+  var shotsBox = document.getElementById("shots");
+  SHOTS.forEach(function(cap, i){
+    var lab = document.createElement("label");
+    lab.className = "shot";
+    var inp = document.createElement("input");
+    inp.type = "file"; inp.accept = "image/*"; inp.hidden = true;
+    var im = document.createElement("span"); im.className = "im";
+    var hint = document.createElement("span"); hint.className = "hint"; hint.textContent = "выбрать снимок";
+    var meta = document.createElement("span"); meta.className = "meta";
+    var no = document.createElement("span"); no.className = "no";
+    no.textContent = (i + 1 < 10 ? "0" : "") + (i + 1);
+    var cp = document.createElement("span"); cp.className = "cap"; cp.textContent = cap;
+    meta.appendChild(no); meta.appendChild(cp);
+    lab.appendChild(inp); lab.appendChild(im); lab.appendChild(hint); lab.appendChild(meta);
+    inp.addEventListener("change", function(e){
+      var f = e.target.files && e.target.files[0];
+      if (!f) return;
+      var u = URL.createObjectURL(f);
+      im.style.backgroundImage = 'url("' + u + '")';
+      lab.classList.add("filled");
+    });
+    shotsBox.appendChild(lab);
+  });
+
+
   var stage = document.getElementById("stage"),
       spotsBox = document.getElementById("spots"),
       infoBox = document.getElementById("info"),
@@ -875,7 +1122,6 @@ body.hidden-ui .rail-top,body.hidden-ui .rail-bottom{background:none}
   var lon = 0, lat = 0, fov = 78, texture = null, custom = false;
   var autoSpin = false, current = null, nodes = [], active = null;
   var pointers = {}, pCount = 0, lastX = 0, lastY = 0, pinch0 = 0, fov0 = 0;
-  var reduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 
   function setTex(src, isCustom){
     var t = (src instanceof HTMLCanvasElement && !isCustom) ? new THREE.CanvasTexture(src) : new THREE.Texture(src);
@@ -1047,6 +1293,7 @@ body.hidden-ui .rail-top,body.hidden-ui .rail-bottom{background:none}
 
   var fwd = new THREE.Vector3();
   function render(){
+    if (document.getElementById("tourOverlay").hidden){ requestAnimationFrame(render); return; }
     if (autoSpin && !pCount) lon += .05;
     lat = Math.max(-82, Math.min(82, lat));
     camera.fov = fov; camera.updateProjectionMatrix();
@@ -1119,11 +1366,9 @@ body.hidden-ui .rail-top,body.hidden-ui .rail-bottom{background:none}
     planBox.hidden = !open;
     planBtn.setAttribute("aria-pressed", open ? "true" : "false");
   });
-  var sheet = document.getElementById("sheet");
-  document.getElementById("btnAbout").addEventListener("click", function(){ sheet.hidden = false; sheet.scrollTop = 0; });
-  document.getElementById("sheetClose").addEventListener("click", function(){ sheet.hidden = true; });
   document.addEventListener("keydown", function(e){
-    if (e.key === "Escape"){ if (!sheet.hidden) sheet.hidden = true; else closeInfo(); }
+    if (document.getElementById("tourOverlay").hidden) return;
+    if (e.key === "Escape"){ if (!infoBox.hidden) closeInfo(); else closeTour(); }
     if (e.key === "ArrowLeft") nudge(-10,0);
     if (e.key === "ArrowRight") nudge(10,0);
     if (e.key === "ArrowUp") nudge(0,-8);
@@ -1169,21 +1414,10 @@ body.hidden-ui .rail-top,body.hidden-ui .rail-bottom{background:none}
       '<p style="margin-top:12px">Браузер не поддерживает WebGL, поэтому панорамы не показываются. Ниже — сцены и азимуты отмеченных узлов.</p>' + list + '</div>';
     document.getElementById("bar").hidden = true;
     strip.hidden = true;
-    var e = document.getElementById("entry"); if (e) e.hidden = true;
+    document.getElementById("btnClose").hidden = false;
   }
 
-  var entry = document.getElementById("entry");
-  var nSpots = 0;
-  SCENES.forEach(function(s){ s.spots.forEach(function(p){ if (!p.to) nSpots++; }); });
-  document.getElementById("mTours").textContent = TOURS.length;
-  document.getElementById("mScenes").textContent = SCENES.length;
-  document.getElementById("mSpots").textContent = nSpots;
-  document.getElementById("entryStart").addEventListener("click", function(){
-    entry.classList.add("out");
-    setSpin(!reduce);
-    setTimeout(function(){ entry.hidden = true; }, reduce ? 0 : 700);
-  });
-
+  tourReady = true;
   resize();
   loadScene("c-ext");
   setSpin(false);
