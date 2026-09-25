@@ -33,6 +33,16 @@ jobs:
           node-version: "22"
       - run: supabase/functions/_shared/run-tests.sh
 
+  prihod:
+    name: Приход по накладной — сопоставление и выгрузка
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node --test tools/prihod/core.test.js
+
   web:
     name: Интерфейс в браузере
     runs-on: ubuntu-latest

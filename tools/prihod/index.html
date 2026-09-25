@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Приход по накладной</title>
+<style>
+  :root {
+    --bg: #f5f5f7; --card: #fff; --text: #1d1d1f; --muted: #6e6e73; --line: #d2d2d7;
+    --ok: #e3f5e8; --ok-b: #34a853; --likely: #fff6d6; --likely-b: #d4a106;
+    --suggest: #ffe9d6; --suggest-b: #e8710a; --none: #fde2e1; --none-b: #d93025;
+    --accent: #0a66c2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1e; --card: #2c2c2e; --text: #f5f5f7; --muted: #a1a1a6; --line: #48484a;
+      --ok: #1e3a26; --likely: #3d3414; --suggest: #3f2a17; --none: #3f1c1b; --accent: #4ea1ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
+  main { max-width: 1400px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 20px; margin: 0 0 12px; }
+  h2 { font-size: 16px; margin: 0 0 8px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .muted { color: var(--muted); }
+  label { display: inline-flex; gap: 6px; align-items: center; }
+  input[type=text], input[type=number], select, textarea {
+    font: inherit; color: inherit; background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px;
+  }
+  textarea { width: 100%; min-height: 140px; font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+  button { font: inherit; border: 1px solid var(--line); background: var(--card); color: var(--text); border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button:disabled { opacity: .5; cursor: default; }
+  .banner { padding: 8px 12px; border-radius: 6px; margin: 8px 0; border-left: 4px solid; }
+  .banner.err { background: var(--none); border-color: var(--none-b); }
+  .banner.ok { background: var(--ok); border-color: var(--ok-b); }
+  .banner.warn { background: var(--likely); border-color: var(--likely-b); }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; min-width: 1100px; }
+  th, td { border-bottom: 1px solid var(--line); padding: 6px; vertical-align: top; text-align: left; }
+  th { font-weight: 600; font-size: 12px; color: var(--muted); }
+  td.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  tr.s-ok td:first-child { border-left: 4px solid var(--ok-b); }
+  tr.s-likely td:first-child { border-left: 4px solid var(--likely-b); }
+  tr.s-suggest td:first-child { border-left: 4px solid var(--suggest-b); }
+  tr.s-none td:first-child { border-left: 4px solid var(--none-b); }
+  tr.s-likely { background: var(--likely); } tr.s-suggest { background: var(--suggest); } tr.s-none { background: var(--none); }
+  tr.confirmed { background: transparent; }
+  td select { width: 100%; max-width: 460px; }
+  .pick { display: flex; flex-direction: column; gap: 4px; }
+  .warn { color: var(--none-b); font-size: 12px; }
+  .small { font-size: 12px; }
+  .pill { align-self: flex-start; display: inline-block; font-size: 11px; padding: 1px 6px; border-radius: 10px; border: 1px solid var(--line); }
+  input.factor { width: 60px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Приход по накладной → Штрих-М</h1>
+
+  <section class="card" id="catalogCard">
+    <h2>1. Справочник</h2>
+    <p class="muted small">В 1С откройте справочник «Штрих коды» (или «Номенклатура»), «Ещё → Вывести список», сохраните в Excel и загрузите сюда. Загружается один раз, потом хранится в браузере.</p>
+    <div class="row">
+      <input type="file" id="catalogFile" accept=".xlsx,.xls,.csv,.ods">
+      <span id="catalogStatus" class="muted">Справочник не загружен</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>2. Накладная</h2>
+    <div class="row" style="margin-bottom:8px">
+      <label>Поставщик <input type="text" id="supplier" list="suppliers" size="30" placeholder="как называется в накладной"></label>
+      <datalist id="suppliers"></datalist>
+      <label>Итого по накладной <input type="text" id="total" size="12" placeholder="необязательно"></label>
+    </div>
+    <textarea id="pasted" placeholder="Вставьте строки накладной:
+— таблицу из Excel (наименование, кол-во, ед., цена, сумма, код поставщика),
+— таблицу, которую выдал ИИ в формате бланка 1С,
+— или JSON распознавания."></textarea>
+    <div class="row" style="margin-top:8px">
+      <button class="primary" id="parseBtn">Сопоставить</button>
+      <span id="parseStatus" class="muted"></span>
+    </div>
+  </section>
+
+  <section class="card" id="resultCard" hidden>
+    <h2>3. Проверка</h2>
+    <div id="docBanners"></div>
+    <div class="row" style="margin:8px 0">
+      <span id="counts"></span>
+      <span style="flex:1"></span>
+      <button id="confirmLikely">Подтвердить все жёлтые</button>
+      <button id="copyNew">Скопировать новые товары</button>
+      <button class="primary" id="exportBtn">Скачать файл для 1С</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>№</th><th>В накладной</th><th>Кол-во / ед.</th><th>Сумма</th>
+          <th>Товар в 1С</th><th>Шт. в уп.</th><th>В 1С: кол-во × цена</th><th>Замечания</th><th>✓</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p class="muted small">Загрузка в 1С: Приходная накладная → «Заполнить» → «Загрузить из файла…» → «Из внешнего файла» → «Загрузить таблицу из файла».</p>
+  </section>
+
+  <section class="card small">
+    <h2>Память сопоставлений</h2>
+    <p class="muted">После выгрузки подтверждённые пары «строка поставщика → товар 1С» запоминаются, и в следующий раз подставляются сами. Память хранится только в этом браузере — время от времени сохраняйте копию.</p>
+    <div class="row">
+      <span id="memoryStatus" class="muted"></span>
+      <button id="memorySave">Сохранить копию в файл</button>
+      <label><button id="memoryLoadBtn">Загрузить копию</button><input type="file" id="memoryFile" accept=".json" hidden></label>
+    </div>
+  </section>
+</main>
+
+<script src="vendor/xlsx-0.20.3.full.min.js"></script>
+<script src="core.js"></script>
+<script>
+'use strict';
+const C = window.PrihodCore;
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const fmt = (n) => (Number.isFinite(n) ? n.toLocaleString('ru-RU', { maximumFractionDigits: 3 }) : '—');
+const money = (n) => (Number.isFinite(n) ? n.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—');
+
+// ---------- хранилище ----------
+// Справочник (десятки тысяч строк) — в IndexedDB, память — в localStorage.
+// Любая из них может быть недоступна (приватный режим), тогда просто не храним.
+
+function idb() {
+  return new Promise((resolve, reject) => {
+    const r = indexedDB.open('prihod', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('kv');
+    r.onsuccess = () => resolve(r.result);
+    r.onerror = () => reject(r.error);
+  });
+}
+async function idbGet(key) {
+  try {
+    const db = await idb();
+    return await new Promise((res, rej) => { const q = db.transaction('kv').objectStore('kv').get(key); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); });
+  } catch { return undefined; }
+}
+async function idbSet(key, value) {
+  try {
+    const db = await idb();
+    await new Promise((res, rej) => { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').put(value, key); t.oncomplete = res; t.onerror = () => rej(t.error); });
+  } catch (e) { console.warn('IndexedDB недоступна', e); }
+}
+function loadMemory() {
+  try { return JSON.parse(localStorage.getItem('prihod.memory') || '{}'); } catch { return {}; }
+}
+function saveMemory() {
+  try { localStorage.setItem('prihod.memory', JSON.stringify(memory)); } catch (e) { alert('Не удалось сохранить память: ' + e.message); }
+  renderMemory();
+}
+
+let catalog = null;
+let memory = loadMemory();
+let state = null; // { supplier, total, check, rows: [...] }
+
+function setCatalog(items, meta) {
+  catalog = C.buildCatalog(items);
+  $('catalogStatus').textContent = `Загружен: ${catalog.list.length.toLocaleString('ru-RU')} товаров` + (meta ? ` (${meta})` : '');
+  $('catalogStatus').className = '';
+}
+
+function renderMemory() {
+  const keys = Object.keys(memory);
+  const suppliers = [...new Set(keys.map((k) => k.split('|')[0]))];
+  $('memoryStatus').textContent = `Запомнено пар: ${keys.length}, поставщиков: ${suppliers.length}`;
+  $('suppliers').innerHTML = suppliers.map((s) => `<option value="${esc(s)}">`).join('');
+}
+
+// ---------- справочник ----------
+
+$('catalogFile').addEventListener('change', async (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  $('catalogStatus').textContent = 'Читаю…';
+  try {
+    const wb = XLSX.read(await f.arrayBuffer());
+    const aoa = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: true, defval: null });
+    const items = C.parseCatalogRows(aoa);
+    const meta = `${f.name}, ${new Date().toLocaleDateString('ru-RU')}`;
+    setCatalog(items, meta);
+    await idbSet('catalog', { items, meta });
+    if (state) rebuild();
+  } catch (err) {
+    $('catalogStatus').textContent = 'Ошибка: ' + err.message;
+    $('catalogStatus').className = 'warn';
+  }
+});
+
+// ---------- разбор накладной ----------
+
+$('parseBtn').addEventListener('click', () => {
+  if (!catalog) return alert('Сначала загрузите справочник.');
+  let doc;
+  try { doc = C.parsePasted($('pasted').value); } catch (err) { return alert('Не разобрал вставленное: ' + err.message); }
+  if (!doc.lines || !doc.lines.length) return alert('Не нашёл строк с наименованием.');
+  if (doc.supplier && !$('supplier').value) $('supplier').value = doc.supplier;
+  if (doc.total != null && !$('total').value) $('total').value = String(doc.total).replace('.', ',');
+  state = { doc, rows: doc.lines.map((line) => ({ line })) };
+  rebuild();
+});
+
+function rebuild() {
+  const supplier = $('supplier').value.trim();
+  const doc = Object.assign({}, state.doc, { total: $('total').value.trim() || state.doc.total, supplier });
+  state.check = C.checkDocument(doc);
+  state.supplier = supplier;
+  for (const r of state.rows) {
+    r.match = C.matchLine(r.line, catalog, memory, supplier);
+    r.item = r.match.item;
+    r.isNew = false;
+    r.factor = '';
+    r.confirmed = ['memory', 'barcode', 'exact', 'verified'].includes(r.match.status);
+  }
+  $('resultCard').hidden = false;
+  render();
+}
+
+function base(r) {
+  const line = r.factor ? Object.assign({}, r.line, { perPack: r.factor }) : r.line;
+  return C.toBase(line, r.item, r.match && r.match.remembered);
+}
+
+const STATUS = {
+  memory: ['ok', 'запомнено'], barcode: ['ok', 'по штрихкоду'], exact: ['ok', 'точное совпадение'],
+  verified: ['ok', 'есть в справочнике'], likely: ['likely', 'похоже'], suggest: ['suggest', 'проверьте'], none: ['none', 'не найден'],
+};
+
+function render() {
+  const { check, rows } = state;
+  const banners = [];
+  for (const e of check.docErrors) banners.push(`<div class="banner err">${esc(e)}</div>`);
+  if (!check.docErrors.length && Number.isFinite(check.total)) banners.push(`<div class="banner ok">Сумма строк сходится с «Итого»: ${money(check.linesSum)}</div>`);
+  if (!Number.isFinite(check.total)) banners.push(`<div class="banner warn">Итого не указано — сумма строк ${money(check.linesSum)}. Сверьте с накладной.</div>`);
+  $('docBanners').innerHTML = banners.join('');
+
+  const counts = { ok: 0, likely: 0, suggest: 0, none: 0 };
+  $('rows').innerHTML = rows.map((r, i) => {
+    const [cls, label] = r.isNew ? ['none', 'новый товар'] : STATUS[r.match.status];
+    counts[r.confirmed ? 'ok' : cls]++;
+    const b = r.isNew ? null : base(r);
+    const notes = [...check.lines[i]];
+    if (b) notes.push(...b.warn);
+    if (r.match.aiNameMissing) notes.push('ИИ предложил наименование, которого нет в справочнике');
+    const cands = r.match.candidates || [];
+    const opts = [];
+    if (!r.item && !r.isNew) opts.push('<option value="">— выберите —</option>');
+    const seen = new Set();
+    for (const c of cands) {
+      seen.add(c.item.name);
+      opts.push(`<option value="${esc(c.item.name)}" ${r.item && r.item.name === c.item.name ? 'selected' : ''}>${esc(c.item.name)} · ${Math.round(Math.min(c.score, 1) * 100)}%</option>`);
+    }
+    if (r.item && !seen.has(r.item.name)) opts.push(`<option value="${esc(r.item.name)}" selected>${esc(r.item.name)}</option>`);
+    opts.push(`<option value="__new" ${r.isNew ? 'selected' : ''}>+ Новый товар (завести в 1С)</option>`);
+    const l = r.line;
+    const qtyText = l.packs != null || l.pieces != null ? `${fmt(C.parseNumber(l.packs) || 0)} уп. + ${fmt(C.parseNumber(l.pieces) || 0)} шт.` : `${fmt(C.parseNumber(l.qty))} ${esc(l.unit || '')}`;
+    const needFactor = b && b.warn.some((w) => /коэффициент/.test(w));
+    return `<tr class="s-${cls} ${r.confirmed ? 'confirmed' : ''}" data-i="${i}">
+      <td>${esc(l.n ?? i + 1)}</td>
+      <td>${esc(l.name)}${l.code ? `<div class="muted small">код ${esc(l.code)}</div>` : ''}</td>
+      <td class="num">${qtyText}</td>
+      <td class="num">${money(C.parseNumber(l.sum))}</td>
+      <td><div class="pick">
+        <select data-act="pick">${opts.join('')}</select>
+        <input type="text" data-act="search" placeholder="Найти в справочнике…" class="small">
+        <span class="pill">${esc(label)}</span>
+      </div></td>
+      <td>${b ? `<input type="number" min="1" step="1" class="factor" data-act="factor" value="${esc(r.factor || b.factor || '')}" ${needFactor ? 'style="border-color:var(--none-b)"' : ''} title="${esc(b.factorFrom)}">` : ''}</td>
+      <td class="num">${b && r.item ? `${fmt(b.qty)} ${esc(b.unit)} × ${money(b.price)}` : '—'}</td>
+      <td>${notes.map((n) => `<div class="warn">${esc(n)}</div>`).join('')}</td>
+      <td><input type="checkbox" data-act="confirm" ${r.confirmed ? 'checked' : ''} ${!r.item && !r.isNew ? 'disabled' : ''}></td>
+    </tr>`;
+  }).join('');
+  $('counts').innerHTML = `<span class="pill">готово ${counts.ok}</span> <span class="pill">жёлтых ${counts.likely}</span> <span class="pill">проверить ${counts.suggest}</span> <span class="pill">не найдено ${counts.none}</span>`;
+}
+
+$('rows').addEventListener('change', (e) => {
+  const tr = e.target.closest('tr');
+  if (!tr) return;
+  const r = state.rows[Number(tr.dataset.i)];
+  const act = e.target.dataset.act;
+  if (act === 'pick') {
+    const v = e.target.value;
+    r.isNew = v === '__new';
+    r.item = r.isNew || !v ? null : catalog.byName.get(v);
+    r.confirmed = r.isNew || !!r.item;
+  } else if (act === 'factor') {
+    r.factor = Number(e.target.value) || '';
+  } else if (act === 'confirm') {
+    r.confirmed = e.target.checked;
+  }
+  render();
+});
+
+let searchTimer;
+$('rows').addEventListener('input', (e) => {
+  if (e.target.dataset.act !== 'search') return;
+  const input = e.target;
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    const q = input.value.trim();
+    if (q.length < 2) return;
+    const tr = input.closest('tr');
+    const r = state.rows[Number(tr.dataset.i)];
+    const found = C.search(catalog, q, 20);
+    r.match = Object.assign({}, r.match, { candidates: found.map((item) => ({ item, score: 1 })) });
+    const sel = tr.querySelector('select');
+    sel.innerHTML = '<option value="">— выберите из найденного —</option>' +
+      found.map((it) => `<option value="${esc(it.name)}">${esc(it.name)}</option>`).join('') +
+      '<option value="__new">+ Новый товар (завести в 1С)</option>';
+    sel.focus();
+  }, 250);
+});
+
+$('confirmLikely').addEventListener('click', () => {
+  for (const r of state.rows) if (r.item && r.match.status === 'likely') r.confirmed = true;
+  render();
+});
+
+$('supplier').addEventListener('change', () => state && rebuild());
+$('total').addEventListener('change', () => state && rebuild());
+
+// ---------- выгрузка ----------
+
+$('exportBtn').addEventListener('click', () => {
+  const pending = state.rows.map((r, i) => ({ r, i })).filter(({ r }) => !r.confirmed);
+  if (pending.length) return alert(`Не подтверждены строки: ${pending.map(({ r, i }) => r.line.n ?? i + 1).join(', ')}`);
+  const noFactor = state.rows.filter((r) => r.item && base(r).warn.some((w) => /коэффициент/.test(w)));
+  if (noFactor.length) return alert('Укажите, сколько штук в упаковке, в строках: ' + noFactor.map((r) => r.line.n).join(', '));
+  if (state.check.docErrors.some((e) => /Итого/.test(e)) && !confirm('Сумма строк не сходится с «Итого». Всё равно выгрузить?')) return;
+
+  const rows = state.rows.map((r) => ({ line: r.line, item: r.isNew ? null : r.item, base: r.isNew ? null : base(r) }));
+  const { rows: aoa, newItems } = C.exportRows(rows);
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Лист_1');
+  // Имя латиницей: браузер может заменить кириллическое имя на «download»
+  // без расширения, и Windows не узнает в файле таблицу.
+  const stamp = new Date().toISOString().slice(0, 16).replace(/[-:]/g, '').replace('T', '-');
+  const name = `prihod-${stamp}.xlsx`;
+  XLSX.writeFile(wb, name);
+
+  for (const r of state.rows) {
+    if (!r.item || r.isNew) continue;
+    const b = base(r);
+    C.remember(memory, state.supplier, r.line, r.item.name, b.factor ? { factor: b.factor } : undefined);
+  }
+  saveMemory();
+  if (newItems.length) alert(`В файл не попали ${newItems.length} новых товаров — заведите их в 1С и добавьте в накладную вручную. Список можно скопировать кнопкой «Скопировать новые товары».`);
+});
+
+$('copyNew').addEventListener('click', async () => {
+  const list = state.rows.filter((r) => r.isNew || !r.item).map((r) => [r.line.name, r.line.qty ?? '', r.line.unit ?? '', r.line.sum ?? ''].join('\t')).join('\n');
+  if (!list) return alert('Новых товаров нет.');
+  try { await navigator.clipboard.writeText(list); alert('Скопировано.'); } catch { prompt('Скопируйте вручную:', list); }
+});
+
+// ---------- копия памяти ----------
+
+$('memorySave').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(memory, null, 1)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `prihod-memory-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+$('memoryLoadBtn').addEventListener('click', () => $('memoryFile').click());
+$('memoryFile').addEventListener('change', async (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  try {
+    Object.assign(memory, JSON.parse(await f.text()));
+    saveMemory();
+  } catch (err) { alert('Не удалось прочитать файл: ' + err.message); }
+});
+
+// ---------- старт ----------
+
+renderMemory();
+idbGet('catalog').then((saved) => { if (saved && saved.items) setCatalog(saved.items, saved.meta); });
+</script>
+</body>
+</html>

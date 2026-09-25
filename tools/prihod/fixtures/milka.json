@@ -1,0 +1,87 @@
+{
+ "supplier": "Марс/Мондэлис (Направление В)",
+ "total": 14280.68,
+ "lines": [
+  {
+   "n": 1,
+   "code": "00000000017",
+   "name": "\"EURO\" Milka Батончик OPEO 37гр 36шт",
+   "packs": 1,
+   "pieces": 0,
+   "pricePerPack": 1821.6,
+   "pricePerPiece": 50.6,
+   "sum": 1821.6
+  },
+  {
+   "n": 2,
+   "name": "\"EURO\" Milka Leo Go 48гр 32шт",
+   "packs": 1,
+   "pieces": 0,
+   "pricePerPack": 2462.08,
+   "pricePerPiece": 76.94,
+   "sum": 2462.08
+  },
+  {
+   "n": 3,
+   "code": "УТ-00002233",
+   "name": "\"EURO\" Milka Leo 33,3гр 32шт",
+   "packs": 1,
+   "pieces": 0,
+   "pricePerPack": 2035.2,
+   "pricePerPiece": 63.6,
+   "sum": 2035.2
+  },
+  {
+   "n": 4,
+   "code": "4312273",
+   "name": "MILKA 175гр*16шт Пирожное",
+   "packs": 0,
+   "pieces": 8,
+   "pricePerPack": 2946.72,
+   "pricePerPiece": 184.17,
+   "sum": 1473.36
+  },
+  {
+   "n": 5,
+   "code": "00000000013",
+   "name": "\"EURO\" Milka печенье Choco Lila Sticks 112гр 20шт",
+   "packs": 0,
+   "pieces": 10,
+   "pricePerPack": 2575.4,
+   "pricePerPiece": 128.77,
+   "sum": 1287.7
+  },
+  {
+   "n": 6,
+   "code": "4307541",
+   "name": "DIROL 19гр*18шт XXL Арбуз-Дыня",
+   "packs": 0,
+   "pieces": 18,
+   "pricePerPack": 11162.88,
+   "pricePerPiece": 25.84,
+   "sum": 465.12
+  },
+  {
+   "n": 7,
+   "code": "УТ-00003569",
+   "name": "Coca-Cola Classic Толстая Denmark 330мл*24шт",
+   "packs": 2,
+   "pieces": 0,
+   "pricePerPack": 2210.64,
+   "pricePerPiece": 92.11,
+   "sum": 4421.28
+  },
+  {
+   "n": 8,
+   "code": "УТ-00000105",
+   "name": "\"EURO\" Milka шок. TUC 87гр 18шт",
+   "packs": 0,
+   "pieces": 3,
+   "pricePerPack": 1886.04,
+   "pricePerPiece": 104.78,
+   "sum": 314.34,
+   "note": "«-1» у строки"
+  }
+ ],
+ "_comment": "Перенесено вручную с фото накладной; для частичных накладных «Итого» пересчитано по перенесённым строкам."
+}
