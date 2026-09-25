@@ -51,6 +51,7 @@ supabase/functions/          Edge Functions
   attachment/                пересылка вложений пользователю по запросу
 web/                         Mini App: React + TypeScript + Vite
 scripts/check-deploy.sh      проверка развёрнутого сервиса
+tools/prihod/                приход по накладной в Штрих-М: сопоставление со справочником (отдельный инструмент, см. его README)
 .github/workflows/           тесты на каждый push, ночная резервная копия
 ```
 
